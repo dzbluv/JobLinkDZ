@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowLeft, Send } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Send, Sparkles, UserCircle, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { GlassCard, Input } from '../components/ui/Shared';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { cn } from '../lib/utils';
+
+const DEMO_ACCOUNTS = [
+  {
+    label: 'Candidate',
+    email: 'candidate@joblinkdz.com',
+    password: 'demo123456',
+    role: 'candidate' as const,
+    icon: UserCircle,
+  },
+  {
+    label: 'Recruiter',
+    email: 'recruiter@joblinkdz.com',
+    password: 'demo123456',
+    role: 'admin' as const,
+    icon: Building2,
+  },
+];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -90,6 +108,57 @@ export default function Login() {
               </Button>
             </div>
           </form>
+
+          {/* Demo Accounts */}
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 justify-center mb-6">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Demo Accounts</span>
+              <Sparkles className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {DEMO_ACCOUNTS.map((account) => {
+                const Icon = account.icon;
+                return (
+                  <button
+                    key={account.role}
+                    type="button"
+                    onClick={() => {
+                      setEmail(account.email);
+                      setPassword(account.password);
+                    }}
+                    className={cn(
+                      'group relative p-4 rounded-2xl border-2 transition-all duration-200 text-left',
+                      'border-slate-200 dark:border-slate-800 hover:border-indigo-500/30',
+                      'bg-white dark:bg-slate-900/50 hover:bg-indigo-500/5',
+                      email === account.email && password === account.password
+                        ? 'border-indigo-500/50 bg-indigo-500/10 ring-2 ring-indigo-500/20'
+                        : ''
+                    )}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={cn(
+                        'w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black',
+                        account.role === 'admin' ? 'bg-gradient-to-br from-violet-500 to-indigo-600' : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+                      )}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{account.label}</p>
+                        <p className="text-[9px] text-slate-500 font-medium">{account.role === 'admin' ? 'Recruiter' : 'Job Seeker'}</p>
+                      </div>
+                    </div>
+                    <div className="text-[10px] font-mono text-slate-400 truncate">
+                      {account.email}
+                    </div>
+                    <div className="text-[9px] text-slate-500 mt-0.5 font-mono flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" /> {account.password}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-500">
