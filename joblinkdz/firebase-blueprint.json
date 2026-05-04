@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the platform, either candidate or admin.",
+      "type": "object",
+      "properties": {
+        "full_name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["candidate", "admin"] },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["full_name", "email", "role"]
+    },
+    "Company": {
+      "title": "Company",
+      "description": "A company looking for talent.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "logo": { "type": "string" },
+        "industry": { "type": "string" },
+        "location": { "type": "string" },
+        "website": { "type": "string" },
+        "description": { "type": "string" },
+        "employees": { "type": "string" },
+        "size": { "type": "string", "enum": ["Small", "Medium", "Large"] },
+        "founded": { "type": "string" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["name", "industry", "owner_id"]
+    },
+    "JobOffer": {
+      "title": "Job Offer",
+      "description": "A job posted by a company.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "company_id": { "type": "string" },
+        "logo": { "type": "string" },
+        "location": { "type": "string" },
+        "job_type": { "type": "string", "enum": ["Full-time", "Part-time", "Remote", "Contract", "Internship"] },
+        "salary_range": { "type": "string" },
+        "description": { "type": "string" },
+        "requirements": { "type": "array", "items": { "type": "string" } },
+        "responsibilities": { "type": "array", "items": { "type": "string" } },
+        "created_at": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "closed"] },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["title", "company_id", "status", "owner_id"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "An application submitted by a candidate to a job offer.",
+      "type": "object",
+      "properties": {
+        "candidate_id": { "type": "string" },
+        "candidate_name": { "type": "string" },
+        "job_offer_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewing", "accepted", "rejected"] },
+        "cv_url": { "type": "string" },
+        "cover_message": { "type": "string" },
+        "created_at": { "type": "string" },
+        "job_title": { "type": "string" },
+        "company_name": { "type": "string" },
+        "company_owner_id": { "type": "string" }
+      },
+      "required": ["candidate_id", "job_offer_id", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/companies/{companyId}": {
+      "schema": { "$ref": "#/entities/Company" },
+      "description": "Registered companies"
+    },
+    "/jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/JobOffer" },
+      "description": "Job offers posted by companies"
+    },
+    "/applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/Application" },
+      "description": "Job applications from candidates"
+    }
+  }
+}
