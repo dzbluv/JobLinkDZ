@@ -2,7 +2,6 @@
   "name": "theSIproject-server",
   "version": "0.1.0",
   "private": true,
-  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js"
   },
