@@ -3,6 +3,5 @@
   "framework": "vite",
   "buildCommand": "vite build",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "ignoreCommand": "echo 'Ignoring server directory for Vercel deployment'"
+  "installCommand": "npm install"
 }
