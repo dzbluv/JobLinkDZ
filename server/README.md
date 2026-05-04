@@ -1,6 +1,6 @@
 Server (backend) for the project.
 
-Quick start:
+Quick vstart:
 
 ```bash
 cd server
