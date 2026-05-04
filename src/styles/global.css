@@ -1,8 +1,0 @@
-:root{
-  --bg:#ffffff;
-  --fg:#111827;
-}
-
-html,body,#root{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Arial,sans-serif}
-@import './theme.css';
