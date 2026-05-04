@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { User, Mail, Phone, MapPin, Briefcase, Camera, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Mail, Phone, MapPin, Briefcase, Camera, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GlassCard, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Avatar, getColorForName, getInitials, COLOR_PALETTE } from '../components/ui/Avatar';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../lib/supabase';
 
 const COMMON_SKILLS = [
   'React', 'TypeScript', 'Node.js', 'Python', 'Next.js', 'Tailwind CSS', 
@@ -16,17 +17,17 @@ const COMMON_SKILLS = [
 const COLOR_OPTIONS = Object.keys(COLOR_PALETTE);
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: user?.full_name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     location: user?.location || '',
-    bio: 'Experienced professional looking for new challenges in the tech industry. Specialized in React development and modern UI practices.',
-    githubUrl: 'github.com/mounib',
-    portfolioUrl: 'https://behance.net/mounib',
-    linkedin: 'linkedin.com/in/mounib',
-    skills: ['React', 'TypeScript', 'Tailwind CSS']
+    bio: user?.bio || '',
+    githubUrl: user?.github_url || '',
+    portfolioUrl: user?.portfolio_url || '',
+    linkedin: user?.linkedin_url || '',
+    skills: user?.skills || []
   });
   
   // Avatar customization state
@@ -36,6 +37,26 @@ export default function Profile() {
   const [skillInput, setSkillInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Sync form state when user data changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        location: user.location || '',
+        bio: user.bio || '',
+        githubUrl: user.github_url || '',
+        portfolioUrl: user.portfolio_url || '',
+        linkedin: user.linkedin_url || '',
+        skills: user.skills || []
+      });
+      setAvatarInitials(user.avatar_initials || '');
+      setAvatarColor(user.avatar_color || getColorForName(user.full_name || 'User'));
+    }
+  }, [user]);
 
   // For recruiters (admin role), they can customize initials and colors
   const isRecruiter = user?.role === 'admin';
@@ -43,10 +64,79 @@ export default function Profile() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSaving(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    setError(null);
+
+    try {
+      // Build the payload for the backend
+      const payload: Record<string, any> = {
+        userId: user?.id,
+        full_name: formData.fullName,
+        phone: formData.phone || null,
+        location: formData.location || null,
+        bio: formData.bio || null,
+        github_url: formData.githubUrl || null,
+        portfolio_url: formData.portfolioUrl || null,
+        linkedin_url: formData.linkedin || null,
+        skills: formData.skills.length > 0 ? formData.skills : null,
+        avatar_initials: isRecruiter && avatarInitials ? avatarInitials : null,
+        avatar_color: avatarColor || null,
+      };
+
+      // Try server-side API first (through Vite proxy to Express)
+      try {
+        const resp = await fetch('/api/users/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (resp.ok) {
+          await refreshUser();
+          setIsSaving(false);
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 3000);
+          return;
+        }
+        
+        const errorData = await resp.json().catch(() => ({}));
+        console.warn('Server update failed, falling back to Supabase client:', errorData);
+      } catch (serverErr) {
+        console.warn('Server API unavailable, falling back to client-side update:', serverErr);
+      }
+
+      // Fallback: Update directly via Supabase client
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          full_name: payload.full_name,
+          phone: payload.phone,
+          location: payload.location,
+          bio: payload.bio,
+          github_url: payload.github_url,
+          portfolio_url: payload.portfolio_url,
+          linkedin_url: payload.linkedin_url,
+          skills: payload.skills,
+          avatar_initials: payload.avatar_initials,
+          avatar_color: payload.avatar_color,
+        })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      await refreshUser();
+      
+      setIsSaving(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Error saving profile:', err);
+      setError(err?.message || 'Failed to save profile. Please try again.');
+      setIsSaving(false);
+    }
   };
 
   const addSkill = (skill: string) => {
@@ -160,17 +250,21 @@ export default function Profile() {
               )}
               
               <div className="flex justify-center gap-4">
-                 {[
-                   { icon: Linkedin, color: 'hover:text-blue-400' },
-                   { icon: Github, color: 'hover:text-slate-900 dark:hover:text-white' },
-                   { icon: Globe, color: 'hover:text-emerald-400' }
-                 ].map((social, i) => (
-                   <React.Fragment key={i}>
-                     <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl ${social.color}`}>
-                       <social.icon className="w-5 h-5" />
-                     </Button>
-                   </React.Fragment>
-                 ))}
+                 <a href={formData.linkedin ? `https://${formData.linkedin}` : '#'} target="_blank" rel="noopener noreferrer">
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-blue-400 ${!formData.linkedin ? 'opacity-30 pointer-events-none' : ''}`}>
+                     <Linkedin className="w-5 h-5" />
+                   </Button>
+                 </a>
+                 <a href={formData.githubUrl ? `https://${formData.githubUrl}` : '#'} target="_blank" rel="noopener noreferrer">
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-slate-900 dark:hover:text-white ${!formData.githubUrl ? 'opacity-30 pointer-events-none' : ''}`}>
+                     <Github className="w-5 h-5" />
+                   </Button>
+                 </a>
+                 <a href={formData.portfolioUrl ? `https://${formData.portfolioUrl}` : '#'} target="_blank" rel="noopener noreferrer">
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-emerald-400 ${!formData.portfolioUrl ? 'opacity-30 pointer-events-none' : ''}`}>
+                     <Globe className="w-5 h-5" />
+                   </Button>
+                 </a>
               </div>
            </GlassCard>
 
@@ -179,11 +273,13 @@ export default function Profile() {
                  <Sparkles className="w-4 h-4 text-indigo-400" /> Core Strengths
               </h4>
               <div className="flex flex-wrap gap-2">
-                 {formData.skills.map(skill => (
+                 {formData.skills.length > 0 ? formData.skills.map(skill => (
                    <span key={skill} className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-400">
                      {skill}
                    </span>
-                 ))}
+                 )) : (
+                   <p className="text-[10px] text-slate-500 italic">No skills added yet</p>
+                 )}
               </div>
            </GlassCard>
         </div>
@@ -207,7 +303,7 @@ export default function Profile() {
                      label="Email Address" 
                      type="email" 
                      value={formData.email} 
-                     onChange={(e) => setFormData({...formData, email: e.target.value})}
+                     disabled
                    />
                    <Input 
                      label="Phone Number" 
@@ -221,6 +317,18 @@ export default function Profile() {
                      value={formData.location} 
                      onChange={(e) => setFormData({...formData, location: e.target.value})}
                    />
+                   <div className="md:col-span-2">
+                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                       Bio / About Me
+                     </label>
+                     <textarea
+                       value={formData.bio}
+                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                       placeholder="Tell us about yourself, your experience, and what you're looking for..."
+                       rows={4}
+                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none"
+                     />
+                   </div>
                 </div>
 
                 <div className="space-y-6">
@@ -322,6 +430,21 @@ export default function Profile() {
                      />
                    </div>
                 </div>
+
+                {/* Error message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                      <p className="text-sm text-rose-300 font-medium">{error}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="pt-8 flex items-center justify-end gap-6">
                    <AnimatePresence>

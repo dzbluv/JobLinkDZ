@@ -8,8 +8,13 @@ export interface User {
   role: 'candidate' | 'admin';
   phone?: string;
   location?: string;
-    avatar_initials?: string | null;
-    avatar_color?: string | null;
+  bio?: string;
+  github_url?: string;
+  portfolio_url?: string;
+  linkedin_url?: string;
+  skills?: string[];
+  avatar_initials?: string | null;
+  avatar_color?: string | null;
 }
 
 interface RegisterPayload {
@@ -25,6 +30,7 @@ interface AuthContextType {
   register: (payload: RegisterPayload) => Promise<User | null>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -163,8 +169,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setUser(null);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      if (data && !error) {
+        setUser(data as User);
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
