@@ -11,8 +11,8 @@ import { cn } from '../lib/utils';
 const DEMO_ACCOUNTS = [
   {
     label: 'Candidate',
-    email: 'dzbluv2@gmail.com',
-    password: 'User_123456',
+    email: 'zakihachemi201@gmail.com',
+    password: '123123',
     role: 'candidate' as const,
     icon: UserCircle,
   },
