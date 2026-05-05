@@ -39,7 +39,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="overflow-x-hidden min-h-screen text-foreground transition-colors duration-500">
+    <div className="relative overflow-x-hidden min-h-screen text-foreground transition-colors duration-500">
 
       {/* Abstract Background Glows */}
       <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-indigo-600/10 dark:bg-indigo-600/20 blur-[120px] rounded-full animate-pulse" />

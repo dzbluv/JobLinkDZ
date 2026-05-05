@@ -90,6 +90,7 @@ export default function AdminJobs() {
     setIsPosting(true);
 
     try {
+<<<<<<< HEAD
       if (editingJobId) {
         const updateData = {
           title: form.title,
@@ -104,7 +105,7 @@ export default function AdminJobs() {
         setJobs(prev => prev.map(j => j.id === editingJobId ? { ...j, ...updateData } : j));
         setIsModalOpen(false);
         setEditingJobId(null);
-        setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+        setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
         const newJob: Omit<JobOffer, 'id'> = {
           title: form.title,
@@ -131,10 +132,36 @@ export default function AdminJobs() {
            setJobs([createdJob, ...jobs]);
            checkJobAgainstAlerts(createdJob);
            setIsModalOpen(false);
-           setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+           setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
         } else {
            alert('Failed to create job. Check the browser console for details.');
         }
+=======
+      const newJob: Omit<JobOffer, 'id'> = {
+        title: form.title,
+        company: form.company,
+        company_id: companyId,
+        location: form.location,
+        job_type: form.type as any,
+        salary_range: form.salary || 'Competitive',
+        description: form.description || 'No description provided.',
+        skills: [],
+        requirements: [],
+        responsibilities: [],
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
+
+      console.log('[AdminJobs] Posting job:', newJob);
+      const newId = await jobsAPI.create(newJob);
+      
+      if (newId) {
+        const fullNewJob = { ...newJob, id: newId } as JobOffer;
+        setJobs([fullNewJob, ...jobs]);
+        setIsModalOpen(false);
+        setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '' });
+        checkJobAgainstAlerts(fullNewJob);
+>>>>>>> 90a2904 (azuul)
       }
     } catch (err) {
       console.error('Failed to post job:', err);
@@ -226,7 +253,7 @@ export default function AdminJobs() {
           <h1 className="text-3xl font-bold italic text-slate-900 dark:text-white">Manage Job Offers</h1>
           <p className="text-slate-500">Create, edit, and monitor your current job openings.</p>
         </div>
-        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: companyId ? form.company : '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
+        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
           <Plus className="w-5 h-5" /> Post Job Offer
         </Button>
       </div>
@@ -335,7 +362,7 @@ export default function AdminJobs() {
                          }
                       }}><Trash2 className="w-5 h-5" /></Button>
                    </div>
-                 </div>
+                </div>
               </GlassCard>
             </motion.div>
           );
@@ -475,7 +502,7 @@ export default function AdminJobs() {
                        </p>
                     </div>
                  </form>
-              </motion.div>
+             </motion.div>
           </div>
         )}
       </AnimatePresence>
