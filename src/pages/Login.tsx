@@ -104,23 +104,22 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input type="email" placeholder="name@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
             
-            <div className="relative">
-              <Input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Your password" 
-                required 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                className="pr-10"
-              />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[18px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            <Input 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Your password" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              rightElement={
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+            />
             
             <div className="text-right -mt-2">
               <button 

@@ -25,10 +25,12 @@ export default function Landing() {
     }
     loadJobs();
 
-    // Toggle no-scrollbar class on body
+    // Toggle no-scrollbar class on body and html
     document.body.classList.add('no-scrollbar');
+    document.documentElement.classList.add('no-scrollbar');
     return () => {
       document.body.classList.remove('no-scrollbar');
+      document.documentElement.classList.remove('no-scrollbar');
     };
   }, []);
   const containerVariants = {
