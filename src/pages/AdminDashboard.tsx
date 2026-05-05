@@ -8,7 +8,7 @@ import { useNotifications } from '../context/NotificationContext';
 import { Avatar } from '../components/ui/Avatar';
 import type { JobOffer } from '../data/mockJobs';
 import type { Application } from '../data/mockApplications';
-import { applicationsAPI, jobsAPI } from '../services/api';
+import { applicationsAPI, jobsAPI, companiesAPI } from '../services/api';
 import { GlassCard, StatCard, Badge } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Link } from 'react-router-dom';
@@ -27,14 +27,21 @@ export default function AdminDashboard() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const [apps, fetchedJobs] = await Promise.all([
-          applicationsAPI.getAll(),
-          jobsAPI.getAll()
-        ]);
-        // Ideally filter apps for the jobs owned by this admin,
-        // but for now we follow the structure.
-        setApplications(apps);
-        setJobs(fetchedJobs.filter(j => j.owner_id === user?.id));
+        const company = await companiesAPI.getByOwnerId(user.id);
+        if (!company) {
+          setJobs([]);
+          setApplications([]);
+          return;
+        }
+
+        const fetchedJobs = await jobsAPI.getByCompanyId(company.id);
+        const allApps = await applicationsAPI.getAll();
+        
+        const jobIds = new Set(fetchedJobs.map(j => j.id));
+        const filteredApps = allApps.filter(a => jobIds.has(a.job_id));
+
+        setApplications(filteredApps);
+        setJobs(fetchedJobs);
       } catch (error) {
         console.error("Error fetching admin dashboard data:", error);
       } finally {
@@ -120,11 +127,11 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4">
                            <div className="flex items-center gap-3">
                               <Avatar name={`Applicant ${i + 1}`} size="sm" />
-                              <span className="font-bold text-sm text-slate-900 dark:text-white">Candidate {i + 1}</span>
+                              <span className="font-bold text-sm text-slate-900 dark:text-white">{app.users?.full_name || `Candidate ${i + 1}`}</span>
                            </div>
                         </td>
                         <td className="px-6 py-4">
-                           <span className="text-sm font-bold text-slate-400">{app.job_title}</span>
+                           <span className="text-sm font-bold text-slate-400">{app.jobs?.title || 'Unknown Job'}</span>
                         </td>
                         <td className="px-6 py-4">
                            <Badge variant={app.status === 'accepted' ? 'success' : app.status === 'pending' ? 'warning' : 'info'}>{app.status}</Badge>

@@ -1,42 +1,39 @@
 export interface Application {
   id: string;
-  candidate_id: string;
-  candidate_name: string; // Added for display
-  job_offer_id: string;
+  user_id: string;
+  job_id: string;
   status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
-  cv_url: string;
-  cover_message: string;
+  resume_url?: string;
+  cover_letter?: string;
+  applied_at: string;
   created_at: string;
-  job_title: string; // Helper for display
-  company_name: string; // Helper for display
-  company_id?: string;
+  jobs?: { title: string };
+  users?: { full_name: string };
 }
 
 export const mockApplications: Application[] = [
   {
     id: 'app_1',
-    candidate_id: '1',
-    candidate_name: 'Ahmed Benali',
-    job_offer_id: '1',
+    user_id: '1',
+    job_id: '1',
     status: 'reviewing',
-    cv_url: 'candidate_cv.pdf',
-    cover_message: 'I am highly interested in this senior position as it matches my skills perfectly.',
+    resume_url: 'candidate_cv.pdf',
+    cover_letter: 'I am highly interested in this senior position as it matches my skills perfectly.',
+    applied_at: '2024-03-25T08:30:00Z',
     created_at: '2024-03-25T08:30:00Z',
-    job_title: 'Senior Frontend Developer',
-    company_name: 'TechFlow Algeria',
-    company_id: 'c1'
+    jobs: { title: 'Senior Frontend Developer' },
+    users: { full_name: 'Ahmed Benali' }
   },
   {
     id: 'app_2',
-    candidate_id: '1',
-    candidate_name: 'Ahmed Benali',
-    job_offer_id: '2',
+    user_id: '1',
+    job_id: '2',
     status: 'pending',
-    cv_url: 'candidate_cv.pdf',
-    cover_message: 'I love designing beautiful UIs and I believe I would be a great fit for your team.',
+    resume_url: 'candidate_cv.pdf',
+    cover_letter: 'I love designing beautiful UIs and I believe I would be a great fit for your team.',
+    applied_at: '2024-03-26T15:00:00Z',
     created_at: '2024-03-26T15:00:00Z',
-    job_title: 'UX/UI Designer',
-    company_name: 'Creative Studios DZ',
-    company_id: 'c2'
+    jobs: { title: 'UX/UI Designer' },
+    users: { full_name: 'Ahmed Benali' }
   }
 ];

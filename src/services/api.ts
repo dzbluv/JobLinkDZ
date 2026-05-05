@@ -67,6 +67,20 @@ export const jobsAPI = {
     } catch (e) {
       console.error('Error deleting job:', e);
     }
+  },
+  getByCompanyId: async (companyId: string): Promise<JobOffer[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as JobOffer[];
+    } catch (e) {
+      console.error('Error fetching jobs by company:', e);
+      return [];
+    }
   }
 };
 
@@ -97,6 +111,45 @@ export const companiesAPI = {
       console.error('Error fetching company:', e);
       return null;
     }
+  },
+  getByOwnerId: async (ownerId: string): Promise<Company | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      return data as Company | null;
+    } catch (e) {
+      console.error('Error fetching company by owner:', e);
+      return null;
+    }
+  },
+  create: async (company: Omit<Company, 'id'>): Promise<string> => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .insert(company)
+        .select()
+        .single();
+      if (error) throw error;
+      return data.id;
+    } catch (e) {
+      console.error('Error creating company:', e);
+      return '';
+    }
+  },
+  update: async (id: string, updateData: Partial<Company>): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .update(updateData)
+        .eq('id', id);
+      if (error) throw error;
+    } catch (e) {
+      console.error('Error updating company:', e);
+    }
   }
 };
 
@@ -106,7 +159,7 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .select('*')
+        .select('*, jobs(title), users(full_name)')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as Application[];
@@ -119,8 +172,8 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .select('*')
-        .eq('candidate_id', userId)
+        .select('*, jobs(title), users(full_name)')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as Application[];

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import type { JobOffer } from '../data/mockJobs';
 import type { Application } from '../data/mockApplications';
-import { jobsAPI, applicationsAPI } from '../services/api';
+import { jobsAPI, applicationsAPI, companiesAPI } from '../services/api';
 import { GlassCard, Badge, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
@@ -22,6 +22,7 @@ export default function AdminJobs() {
   const [search, setSearch] = useState('');
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [companyId, setCompanyId] = useState<string | null>(null);
   
   const [isPosting, setIsPosting] = useState(false);
   const [form, setForm] = useState({
@@ -37,12 +38,22 @@ export default function AdminJobs() {
         if (!user?.id) return;
         setIsLoading(true);
         try {
-           const [allJobs, allApps] = await Promise.all([
-             jobsAPI.getAll(),
+           const company = await companiesAPI.getByOwnerId(user.id);
+           if (!company) {
+             setJobs([]);
+             setApplications([]);
+             return;
+           }
+           setCompanyId(company.id);
+
+           const [fetchedJobs, allApps] = await Promise.all([
+             jobsAPI.getByCompanyId(company.id),
              applicationsAPI.getAll()
            ]);
-           setJobs(allJobs.filter(j => j.owner_id === user.id));
-           setApplications(allApps);
+           
+           const jobIds = new Set(fetchedJobs.map(j => j.id));
+           setJobs(fetchedJobs);
+           setApplications(allApps.filter(a => jobIds.has(a.job_id)));
         } catch(e) {
            console.error(e);
         } finally {
@@ -54,14 +65,13 @@ export default function AdminJobs() {
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id) return;
+    if (!user?.id || !companyId) return;
     setIsPosting(true);
 
     const newJob: Omit<JobOffer, 'id'> = {
       title: form.title,
       company: form.company,
-      company_id: 'c1', // Mock for now, ideally fetch user's company
-      owner_id: user.id,
+      company_id: companyId,
       location: form.location,
       job_type: form.type as any,
       salary_range: form.salary,
@@ -166,7 +176,7 @@ export default function AdminJobs() {
              No jobs found.
            </div>
         ) : filteredJobs.map((job) => {
-          const jobApplications = applications.filter(app => app.job_offer_id === job.id);
+          const jobApplications = applications.filter(app => app.job_id === job.id);
           const totalApplicants = jobApplications.length;
           const newApplicants = jobApplications.filter(app => app.status === 'pending').length;
           const isSelected = selectedJobs.includes(job.id);
