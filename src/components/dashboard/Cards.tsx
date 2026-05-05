@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Briefcase, DollarSign, Clock, ChevronRight, User, Calendar, Search, CheckCircle, XCircle, ArrowRight, Heart, Share2, Link as LinkIcon } from 'lucide-react';
+import { MapPin, Briefcase, DollarSign, Clock, ChevronRight, User, Calendar, Search, CheckCircle, XCircle, ArrowRight, Heart, Share2, Link as LinkIcon, Trash2 } from 'lucide-react';
 import type { JobOffer } from '../../data/mockJobs';
 import { GlassCard, Badge } from '../ui/Shared';
 import { Button } from '../ui/Button';
@@ -28,14 +28,16 @@ export function JobCard({ job }: { job: JobOffer }) {
       <div className="absolute top-4 right-4 flex gap-2 z-10">
          <button 
            onClick={(e) => { e.preventDefault(); toggleFavoriteJob(job.id); }}
-           className={`p-2 rounded-xl border border-slate-200 dark:border-white/10 transition-all ${favorite ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-rose-500'}`}
+           className={`p-2 rounded-xl border border-slate-200 dark:border-white/10 transition-colors ${favorite ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-rose-500'}`}
+           aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
          >
            <Heart className={`w-4 h-4 ${favorite ? 'fill-current' : ''}`} />
          </button>
          <div className="relative">
            <button 
              onClick={handleShare}
-             className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-indigo-400 transition-all"
+             className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-indigo-400 transition-colors"
+             aria-label="Share job"
            >
              <Share2 className="w-4 h-4" />
            </button>
@@ -92,7 +94,7 @@ export function JobCard({ job }: { job: JobOffer }) {
   );
 }
 
-export function ApplicationCard({ application }: { application: Application }) {
+export function ApplicationCard({ application, onDelete }: { application: Application; onDelete?: (id: string) => void }) {
   const navigate = useNavigate();
   const statusConfig = {
     pending: { label: 'Pending', variant: 'warning', icon: Clock, color: 'text-amber-600 dark:text-amber-400' },
@@ -152,10 +154,38 @@ export function ApplicationCard({ application }: { application: Application }) {
             Applied {new Date(application.created_at).toLocaleDateString()}
           </p>
         </div>
-        <Link to={`/applications/${application.id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors italic group/specs">
-          View Details
-          <ChevronRight className="w-3.5 h-3.5 group-hover/specs:translate-x-1 transition-transform" />
-        </Link>
+        <div className="flex items-center gap-4">
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (application.status === 'rejected' || application.status === 'accepted') {
+                  if (window.confirm('Are you sure you want to delete this application?')) {
+                    onDelete(application.id);
+                  }
+                }
+              }}
+              disabled={!(application.status === 'rejected' || application.status === 'accepted')}
+              className={`p-2 rounded-xl transition-colors ${
+                application.status === 'rejected' || application.status === 'accepted'
+                  ? 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 cursor-pointer'
+                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+              }`}
+              title={
+                application.status === 'rejected' || application.status === 'accepted'
+                  ? "Delete application"
+                  : "You can only delete accepted or rejected applications"
+              }
+              aria-label="Delete application"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <Link to={`/applications/${application.id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors italic group/specs">
+            View Details
+            <ChevronRight className="w-3.5 h-3.5 group-hover/specs:translate-x-1 transition-transform" />
+          </Link>
+        </div>
       </div>
     </GlassCard>
   );

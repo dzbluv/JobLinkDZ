@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, Clock, CheckCircle, XCircle, Search, 
   Settings, User as UserIcon, Bell, ExternalLink, ArrowRight, Star, Sparkles,
-  AlertCircle, Loader2
+  AlertCircle, Loader2, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -14,7 +14,7 @@ import { GlassCard, StatCard, Badge } from '../components/ui/Shared';
 import { ApplicationCard, JobCard } from '../components/dashboard/Cards';
 import { Button } from '../components/ui/Button';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function CandidateDashboard() {
@@ -24,6 +24,18 @@ export default function CandidateDashboard() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [allJobs, setAllJobs] = useState<JobOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAllApplications, setShowAllApplications] = useState(false);
+
+  const handleDeleteApplication = async (appId: string) => {
+    try {
+      await applicationsAPI.delete(appId);
+      setApplications(prev => prev.filter(app => app.id !== appId));
+    } catch (error) {
+      console.error("Failed to delete application:", error);
+    }
+  };
+
+
 
   useEffect(() => {
     async function fetchData() {
@@ -175,7 +187,12 @@ export default function CandidateDashboard() {
            <section className="space-y-6">
              <div className="flex justify-between items-center px-2">
                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">Recent Applications</h2>
-               <Link to="/jobs" className="text-slate-500 text-sm font-bold hover:text-slate-900 dark:text-white transition-all">View All</Link>
+               <button 
+                 onClick={() => setShowAllApplications(true)}
+                 className="text-slate-500 text-sm font-bold hover:text-slate-900 dark:text-white transition-colors"
+               >
+                 View All
+               </button>
              </div>
              
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -184,7 +201,7 @@ export default function CandidateDashboard() {
                     <Loader2 className="w-10 h-10 animate-spin" />
                   </div>
                ) : (
-                 applications.map((app, i) => (
+                 applications.slice(0, 4).map((app, i) => (
                    <motion.div 
                      key={app.id}
                      initial={{ opacity: 0, y: 20 }}
@@ -304,6 +321,55 @@ export default function CandidateDashboard() {
 
         </div>
       </div>
+
+      <AnimatePresence>
+        {showAllApplications && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 overscroll-contain">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              onClick={() => setShowAllApplications(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-5xl max-h-[90vh] bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-white/10"
+            >
+              <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100 dark:border-white/5 shrink-0">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">All Your Applications</h2>
+                <button 
+                  onClick={() => setShowAllApplications(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {applications.length === 0 ? (
+                    <div className="col-span-full py-12 text-center text-slate-500 font-medium">No applications found.</div>
+                  ) : (
+                    applications.map((app, i) => (
+                      <motion.div 
+                        key={app.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i * 0.05, 0.5) }}
+                      >
+                        <ApplicationCard application={app} onDelete={handleDeleteApplication} />
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

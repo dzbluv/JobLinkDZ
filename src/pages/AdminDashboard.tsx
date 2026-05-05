@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   Briefcase, Users, FileText, CheckCircle, Clock, XCircle,
-  Plus, TrendingUp, Search, MoreHorizontal, Loader2, Eye
+  Plus, TrendingUp, Search, MoreHorizontal, Loader2, Eye, Building2, Edit2, MapPin, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Avatar } from '../components/ui/Avatar';
 import type { JobOffer } from '../data/mockJobs';
 import type { Application } from '../data/mockApplications';
+import type { Company } from '../data/mockCompanies';
 import { applicationsAPI, jobsAPI, companiesAPI } from '../services/api';
-import { GlassCard, StatCard, Badge } from '../components/ui/Shared';
+import { GlassCard, StatCard, Badge, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -27,12 +28,32 @@ export default function AdminDashboard() {
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [jobs, setJobs] = useState<JobOffer[]>([]);
+  const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Edit Company State
+  const [isEditCompanyModalOpen, setIsEditCompanyModalOpen] = useState(false);
+  const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
+  const [companyForm, setCompanyForm] = useState<{
+    name: string;
+    industry: string;
+    size: "Small" | "Medium" | "Large" | "";
+    location: string;
+    description: string;
+    website: string;
+  }>({
+    name: '',
+    industry: '',
+    size: '',
+    location: '',
+    description: '',
+    website: ''
+  });
 
   const handleStatusChange = async (id: string, newStatus: Application["status"]) => {
     setProcessingId(id);
@@ -54,42 +75,45 @@ export default function AdminDashboard() {
       if (!user?.id) return;
       setIsLoading(true);
       try {
-        let company = await companiesAPI.getByOwnerId(user.id);
+        let currentCompany = await companiesAPI.getByOwnerId(user.id);
 
         // Auto-fix: if recruiter has no company, create a default one (consistent with AdminJobs)
-        if (!company && user.role === 'admin') {
+        if (!currentCompany && user.role === 'admin') {
           const newCompanyId = await companiesAPI.create({
             owner_id: user.id,
             name: user.full_name + "'s Company",
             industry: 'Technology',
             size: 'Medium',
             location: 'Algiers',
-            description: 'Automatically created company profile.'
+            description: 'Automatically created company profile.',
+            website: 'https://example.com'
           });
-          company = await companiesAPI.getById(newCompanyId);
+          currentCompany = await companiesAPI.getById(newCompanyId);
         }
 
-        if (!company) {
+        if (!currentCompany) {
           setJobs([]);
           setApplications([]);
           return;
         }
 
+        setCompany(currentCompany);
+        setCompanyForm({
+          name: currentCompany.name,
+          industry: currentCompany.industry || '',
+          size: currentCompany.size || '',
+          location: currentCompany.location || '',
+          description: currentCompany.description || '',
+          website: currentCompany.website || ''
+        });
+
         const [fetchedJobs, allApps] = await Promise.all([
-          jobsAPI.getByCompanyId(company.id),
+          jobsAPI.getByCompanyId(currentCompany.id),
           applicationsAPI.getAll()
         ]);
 
-        console.log("[AdminDashboard] Fetched Data:", {
-          companyId: company.id,
-          jobsCount: fetchedJobs.length,
-          totalAppsInSystem: allApps.length
-        });
-
         const jobIds = new Set(fetchedJobs.map(j => j.id));
         const filteredApps = allApps.filter(a => jobIds.has(a.job_id));
-
-        console.log("[AdminDashboard] Filtered Applications for this recruiter:", filteredApps.length);
 
         setApplications(filteredApps);
         setJobs(fetchedJobs);
@@ -101,6 +125,30 @@ export default function AdminDashboard() {
     }
     fetchData();
   }, [user?.id, user?.role, user?.full_name]);
+
+  const handleUpdateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!company) return;
+    setIsUpdatingCompany(true);
+    try {
+      const updatedData = {
+        name: companyForm.name,
+        industry: companyForm.industry,
+        size: companyForm.size as "Small" | "Medium" | "Large",
+        location: companyForm.location,
+        description: companyForm.description,
+        website: companyForm.website,
+      };
+      await companiesAPI.update(company.id, updatedData);
+      setCompany(prev => prev ? { ...prev, ...updatedData } : null);
+      setIsEditCompanyModalOpen(false);
+    } catch (error) {
+      console.error("Error updating company:", error);
+      alert("Failed to update company profile.");
+    } finally {
+      setIsUpdatingCompany(false);
+    }
+  };
 
   const stats = [
     { title: 'Active Jobs', value: jobs.filter(j => j.status === 'active').length, icon: Briefcase, color: 'bg-indigo-500' },
@@ -139,15 +187,15 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Main Section */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Recent Applications</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold italic text-slate-900 dark:text-white">Recent Applications</h2>
             <Link to="/admin-applications">
-              <Button variant="ghost" className="text-indigo-400 text-sm font-bold">View All Applications</Button>
+              <Button variant="ghost" className="text-indigo-500 font-bold text-sm">View All</Button>
             </Link>
           </div>
 
-          <GlassCard className="p-0 overflow-hidden" hover={false}>
-            <div className="overflow-x-auto">
+          <GlassCard className="p-0 border border-white/5 bg-white dark:bg-white/5 backdrop-blur-md" hover={false}>
+            <div className="overflow-visible">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-white/10 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-200 dark:border-white/5">
@@ -271,14 +319,6 @@ export default function AdminDashboard() {
             ) : jobs.length === 0 ? (
               <div className="col-span-full py-10 text-center text-slate-500 space-y-4">
                 <p>No active postings.</p>
-                <Button onClick={async () => {
-                  const { mockJobs } = await import('../data/mockJobs');
-                  const { mockCompanies } = await import('../data/mockCompanies');
-                  const { mockApplications } = await import('../data/mockApplications');
-                  const { seedDatabase } = await import('../services/api');
-                  await seedDatabase(mockJobs, mockCompanies, mockApplications);
-                  window.location.reload();
-                }}>Seed Demo Data</Button>
               </div>
             ) : jobs.slice(0, 2).map(job => (
               <div key={job.id}>
@@ -309,6 +349,52 @@ export default function AdminDashboard() {
 
         {/* Sidebar */}
         <div className="space-y-10">
+
+          {/* Company Profile Widget */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Company Profile</h2>
+               {company && (
+                 <Button variant="ghost" size="sm" className="gap-2 text-indigo-500" onClick={() => setIsEditCompanyModalOpen(true)}>
+                   <Edit2 className="w-4 h-4" /> Edit
+                 </Button>
+               )}
+            </div>
+            
+            {isLoading ? (
+               <div className="p-8 text-center text-indigo-500"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+            ) : company ? (
+               <GlassCard className="p-6" hover={false}>
+                 <div className="flex items-center gap-4 mb-6">
+                   <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-2xl font-bold border border-indigo-500/20">
+                      {company.logo || <Building2 className="w-8 h-8 text-indigo-400" />}
+                   </div>
+                   <div>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-lg">{company.name}</h3>
+                     <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{company.industry}</p>
+                   </div>
+                 </div>
+                 
+                 <div className="space-y-3 mb-6">
+                   <div className="flex items-center gap-3 text-sm text-slate-500">
+                     <MapPin className="w-4 h-4 text-slate-400" /> {company.location}
+                   </div>
+                   <div className="flex items-center gap-3 text-sm text-slate-500">
+                     <Users className="w-4 h-4 text-slate-400" /> {company.size} Employees
+                   </div>
+                 </div>
+
+                 <div className="pt-6 border-t border-slate-200 dark:border-white/10">
+                   <p className="text-xs text-slate-500 italic line-clamp-3 leading-relaxed">
+                     {company.description || "No description provided yet."}
+                   </p>
+                 </div>
+               </GlassCard>
+            ) : (
+               <div className="text-sm text-slate-500 italic">No company profile found.</div>
+            )}
+          </div>
+
           {/* Activity Tracker */}
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recruitment Activity</h2>
@@ -363,12 +449,6 @@ export default function AdminDashboard() {
               ))}
             </div>
           </div>
-
-          <GlassCard className="p-8 text-center bg-white/2 border border-slate-200 dark:border-white/10 border-dashed rounded-3xl">
-            <p className="text-[10px] text-slate-500 mb-4 font-bold uppercase tracking-widest">Recruitment Insights</p>
-            <p className="text-sm text-slate-400 mb-6 italic leading-relaxed">"Review applications promptly to increase hiring velocity by up to 2.4x."</p>
-            <Button size="sm" variant="outline" className="w-full">Generate Detailed Analytics</Button>
-          </GlassCard>
         </div>
       </div>
 
@@ -381,6 +461,123 @@ export default function AdminDashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* Edit Company Modal */}
+      <AnimatePresence>
+        {isEditCompanyModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEditCompanyModalOpen(false)}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative z-10 w-full max-w-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+              
+              <div className="flex justify-between items-center mb-8 relative z-10">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">Edit Company Profile</h2>
+                <button onClick={() => setIsEditCompanyModalOpen(false)} className="p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500">
+                  <Plus className="w-6 h-6 rotate-45" />
+                </button>
+              </div>
+              
+              <form className="grid grid-cols-2 gap-6 relative z-10" onSubmit={handleUpdateCompany}>
+                <div className="col-span-2">
+                  <Input 
+                    label="Company Name" 
+                    placeholder="Enter your company name" 
+                    value={companyForm.name}
+                    onChange={(e) => setCompanyForm({...companyForm, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-1 relative group">
+                  <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Industry</label>
+                  <div className="relative">
+                    <select 
+                      className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium appearance-none pr-10"
+                      value={companyForm.industry}
+                      onChange={(e) => setCompanyForm({...companyForm, industry: e.target.value})}
+                    >
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="">Select Industry</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Technology">Technology</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Healthcare">Healthcare</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Finance">Finance</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Education">Education</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Manufacturing">Manufacturing</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Retail">Retail</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Construction">Construction</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Agriculture">Agriculture</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Energy">Energy</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Transportation">Transportation</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Hospitality">Hospitality</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Media">Media</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Real Estate">Real Estate</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Telecommunications">Telecommunications</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Software Development">Software Development</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="E-commerce">E-commerce</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Logistics">Logistics</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Marketing">Marketing</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Consulting">Consulting</option>
+                       <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Other">Other</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Company Size</label>
+                  <select 
+                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium appearance-none"
+                    value={companyForm.size}
+                    onChange={(e) => setCompanyForm({...companyForm, size: e.target.value as "Small" | "Medium" | "Large" | ""})}
+                  >
+                     <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Small">Small (1-50)</option>
+                     <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Medium">Medium (51-200)</option>
+                     <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Large">Large (201+)</option>
+                  </select>
+                </div>
+                <Input 
+                  label="Location" 
+                  placeholder="e.g. Algiers, Algeria" 
+                  value={companyForm.location}
+                  onChange={(e) => setCompanyForm({...companyForm, location: e.target.value})}
+                />
+                <Input 
+                  label="Website" 
+                  placeholder="e.g. https://example.com" 
+                  value={companyForm.website}
+                  onChange={(e) => setCompanyForm({...companyForm, website: e.target.value})}
+                />
+                <div className="col-span-2 space-y-1">
+                  <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Company Description</label>
+                  <textarea 
+                    rows={4} 
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" 
+                    placeholder="Describe your company, its mission and culture..." 
+                    value={companyForm.description} 
+                    onChange={(e) => setCompanyForm({...companyForm, description: e.target.value})} 
+                  />
+                </div>
+                <div className="col-span-2 pt-6">
+                  <Button type="submit" className="w-full h-14 text-lg" isLoading={isUpdatingCompany}>
+                    {isUpdatingCompany ? 'Saving Changes...' : 'Save Company Profile'}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

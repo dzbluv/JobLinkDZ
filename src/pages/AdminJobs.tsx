@@ -24,6 +24,7 @@ export default function AdminJobs() {
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>('');
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const navigate = useNavigate();
   
@@ -61,6 +62,7 @@ export default function AdminJobs() {
 
            if (company) {
              setCompanyId(company.id);
+             setCompanyName(company.name);
              setForm(prev => ({ ...prev, company: company.name }));
              
              const [fetchedJobs, allApps] = await Promise.all([
@@ -98,7 +100,7 @@ export default function AdminJobs() {
     } else {
       setForm({ 
         title: '', 
-        company: user?.full_name ? user.full_name + "'s Company" : '', 
+        company: companyName, 
         location: 'Algiers', 
         salary: '', 
         type: 'Full-time', 
@@ -106,7 +108,7 @@ export default function AdminJobs() {
         workHours: '40' 
       });
     }
-  }, [editingJobId, jobs, user?.full_name]);
+  }, [editingJobId, jobs, companyName]);
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +133,7 @@ export default function AdminJobs() {
         setJobs(prev => prev.map(j => j.id === editingJobId ? { ...j, ...updateData } : j));
         setIsModalOpen(false);
         setEditingJobId(null);
-        setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+        setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
         const newJob: Omit<JobOffer, 'id'> = {
           title: form.title,
@@ -158,7 +160,7 @@ export default function AdminJobs() {
            setJobs([createdJob, ...jobs]);
            checkJobAgainstAlerts(createdJob);
            setIsModalOpen(false);
-           setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+           setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
         } else {
            alert('Failed to create job. Check the browser console for details.');
         }
@@ -253,7 +255,7 @@ export default function AdminJobs() {
           <h1 className="text-3xl font-bold italic text-slate-900 dark:text-white">Manage Job Offers</h1>
           <p className="text-slate-500">Create, edit, and monitor your current job openings.</p>
         </div>
-        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
+        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
           <Plus className="w-5 h-5" /> Post Job Offer
         </Button>
       </div>
@@ -468,6 +470,8 @@ export default function AdminJobs() {
                       value={form.company}
                       onChange={(e) => setForm({...form, company: e.target.value})}
                       required
+                      readOnly
+                      className="cursor-default"
                     />
                     <Input 
                       label="Location" 

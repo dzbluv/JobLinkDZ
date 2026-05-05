@@ -250,6 +250,15 @@ export const applicationsAPI = {
       console.error("Error updating application status:", e);
     }
   },
+  delete: async (id: string): Promise<void> => {
+    try {
+      const { error } = await supabase.from("applications").delete().eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Error deleting application:", e);
+      throw e;
+    }
+  },
 };
 
 // STORAGE
