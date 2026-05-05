@@ -302,26 +302,6 @@ export default function CandidateDashboard() {
             </div>
           </div>
 
-          {/* Job Alerts Info */}
-          <Link to="/settings" className="block group">
-            <GlassCard className="p-8 bg-cyan-500/5 border-cyan-500/10 group-hover:bg-cyan-500/10 transition-all border border-cyan-500/20" hover={false}>
-              <div className="flex items-center gap-5 mb-5">
-                <div className="w-12 h-12 rounded-[1.2rem] bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/30">
-                  <Bell className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white italic">Job Alerts</h4>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Stay proactive</p>
-                </div>
-              </div>
-              <p className="text-[13px] text-slate-400 leading-relaxed italic mb-4">
-                Don't miss out. Setup custom alerts to get notified the second a matching role is posted.
-              </p>
-              <div className="text-[11px] font-extrabold text-cyan-400 flex items-center gap-2">
-                CONFIGURE NOW <ArrowRight className="w-3 h-3" />
-              </div>
-            </GlassCard>
-          </Link>
         </div>
       </div>
     </div>
