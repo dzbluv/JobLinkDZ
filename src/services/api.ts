@@ -154,7 +154,7 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from("applications")
-        .select("*, jobs(title, company, company_id), users(full_name)")
+        .select("*, jobs(title, company, company_id), users(full_name, email, phone, location)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Application[];
@@ -167,7 +167,7 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from("applications")
-        .select("*, jobs(title, company, company_id), users(full_name)")
+        .select("*, jobs(title, company, company_id), users(full_name, email, phone, location)")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (error) throw error;

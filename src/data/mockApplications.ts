@@ -9,12 +9,21 @@ export interface Application {
   created_at: string;
   // Joined relations from Supabase .select('*, jobs(...), users(...)')
   jobs?: { title: string; company?: string; company_id?: string };
-  users?: { full_name: string };
+  users?: { full_name: string; email?: string; phone?: string; location?: string };
 }
 
 // Helper accessors — use these in UI code to safely read joined data
 export function getAppCandidateName(app: Application): string {
   return app.users?.full_name || 'Unknown Candidate';
+}
+export function getAppCandidateEmail(app: Application): string {
+  return app.users?.email || 'N/A';
+}
+export function getAppCandidatePhone(app: Application): string {
+  return app.users?.phone || 'N/A';
+}
+export function getAppCandidateLocation(app: Application): string {
+  return app.users?.location || 'N/A';
 }
 export function getAppJobTitle(app: Application): string {
   return app.jobs?.title || 'Unknown Job';

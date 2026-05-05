@@ -24,6 +24,9 @@ import {
   getAppCandidateName,
   getAppJobTitle,
   getAppCompanyName,
+  getAppCandidateEmail,
+  getAppCandidatePhone,
+  getAppCandidateLocation,
 } from "../data/mockApplications";
 import { applicationsAPI, storageAPI } from "../services/api";
 import { GlassCard, Badge, Input } from "../components/ui/Shared";
@@ -80,6 +83,17 @@ function ApplicationDetailsModal({
                 Application for{" "}
                 <span className="text-indigo-400">{getAppJobTitle(app)}</span>
               </p>
+              <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-400 font-medium">
+                {getAppCandidateEmail(app) !== 'N/A' && (
+                  <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5"/> {getAppCandidateEmail(app)}</span>
+                )}
+                {getAppCandidatePhone(app) !== 'N/A' && (
+                  <span className="flex items-center gap-1.5">📞 {getAppCandidatePhone(app)}</span>
+                )}
+                {getAppCandidateLocation(app) !== 'N/A' && (
+                  <span className="flex items-center gap-1.5">📍 {getAppCandidateLocation(app)}</span>
+                )}
+              </div>
             </div>
           </div>
           <button
@@ -137,89 +151,25 @@ function ApplicationDetailsModal({
                     </div>
                   </div>
 
-                  <div className="aspect-[1/1.4] w-full bg-white p-8 md:p-12 text-slate-900 overflow-y-auto selection:bg-indigo-100 italic">
-                    <div className="space-y-6">
-                      <div className="border-b-2 border-indigo-600 pb-4">
-                        <h1 className="text-3xl font-black uppercase tracking-tighter">
-                          {getAppCandidateName(app)}
-                        </h1>
-                        <p className="text-indigo-600 font-bold uppercase tracking-widest text-[10px] mt-1">
-                          Full-stack Developer & UI Specialist
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-[9px] uppercase tracking-widest font-bold text-slate-400">
-                        <p>Algiers, Algeria</p>
-                        <p className="text-right">joblink.dz/profile/ahmed</p>
-                      </div>
-
-                      <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 border-b border-indigo-100 pb-1">
-                          Professional Summary
-                        </h4>
-                        <p className="text-xs leading-relaxed text-slate-700">
-                          Dedicated software professional with 5+ years of
-                          experience in modern web technologies. Expert in
-                          building responsive, accessible, and high-performance
-                          applications using React, Node.js, and TypeScript.
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 border-b border-indigo-100 pb-1">
-                          Experience
-                        </h4>
-                        <div className="space-y-4">
-                          <div className="relative pl-4 border-l-2 border-slate-100">
-                            <p className="text-[10px] font-black italic">
-                              Senior Developer @ Digital Solutions
-                            </p>
-                            <p className="text-[8px] text-slate-400 mb-1">
-                              2021 - Present
-                            </p>
-                            <p className="text-[10px] leading-relaxed text-slate-600">
-                              Lead a team of 5 developers to deliver cloud-based
-                              SaaS products using React and AWS.
-                            </p>
-                          </div>
-                          <div className="relative pl-4 border-l-2 border-slate-100">
-                            <p className="text-[10px] font-black italic">
-                              Frontend Engineer @ WebCraft DZ
-                            </p>
-                            <p className="text-[8px] text-slate-400 mb-1">
-                              2018 - 2021
-                            </p>
-                            <p className="text-[10px] leading-relaxed text-slate-600">
-                              Refactored legacy jQuery codebase to modern React,
-                              improving performance by 40%.
-                            </p>
-                          </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-900 overflow-y-auto selection:bg-indigo-100" style={{ minHeight: '600px' }}>
+                    {app.resume_url ? (
+                      resumeUrl ? (
+                        <iframe 
+                          src={resumeUrl} 
+                          title="CV Preview" 
+                          className="w-full h-full min-h-[600px] border-0"
+                        />
+                      ) : (
+                        <div className="flex h-[600px] items-center justify-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+                          <span className="ml-2 text-slate-500">Loading document...</span>
                         </div>
+                      )
+                    ) : (
+                      <div className="flex h-[600px] items-center justify-center text-slate-500">
+                        No CV provided for this application.
                       </div>
-
-                      <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 border-b border-indigo-100 pb-1">
-                          Core Competencies
-                        </h4>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            "TypeScript",
-                            "React",
-                            "Node.js",
-                            "PostgreSQL",
-                            "Tailwind",
-                            "Docker",
-                          ].map((skill) => (
-                            <span
-                              key={skill}
-                              className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[8px] font-bold"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </section>

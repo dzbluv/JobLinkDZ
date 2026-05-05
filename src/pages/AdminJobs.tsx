@@ -12,6 +12,7 @@ import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
 import { useJobAlerts } from '../context/JobAlertContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminJobs() {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ export default function AdminJobs() {
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const [isPosting, setIsPosting] = useState(false);
   const [form, setForm] = useState({
@@ -80,34 +83,51 @@ export default function AdminJobs() {
     setIsPosting(true);
 
     try {
-      const newJob: Omit<JobOffer, 'id'> = {
-        title: form.title,
-        company: form.company,
-        company_id: companyId,
-        location: form.location,
-        job_type: form.type as any,
-        salary_range: form.salary || 'Competitive',
-        description: form.description || 'No description provided.',
-        skills: [],
-        requirements: [],
-        responsibilities: [],
-        status: 'active',
-        created_at: new Date().toISOString(),
-        work_hours_per_week: parseInt(form.workHours) || 40
-      };
-
-      console.log('[AdminJobs] Posting job:', newJob);
-      const newId = await jobsAPI.create(newJob);
-      console.log('[AdminJobs] Created job ID:', newId);
-      
-      if (newId) {
-         const createdJob = { ...newJob, id: newId } as JobOffer;
-         setJobs([createdJob, ...jobs]);
-         checkJobAgainstAlerts(createdJob);
-         setIsModalOpen(false);
-         setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+      if (editingJobId) {
+        const updateData = {
+          title: form.title,
+          company: form.company,
+          location: form.location,
+          job_type: form.type as any,
+          salary_range: form.salary,
+          description: form.description,
+          work_hours_per_week: parseInt(form.workHours) || 40
+        };
+        await jobsAPI.update(editingJobId, updateData);
+        setJobs(prev => prev.map(j => j.id === editingJobId ? { ...j, ...updateData } : j));
+        setIsModalOpen(false);
+        setEditingJobId(null);
+        setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
-         alert('Failed to create job. Check the browser console for details.');
+        const newJob: Omit<JobOffer, 'id'> = {
+          title: form.title,
+          company: form.company,
+          company_id: companyId,
+          location: form.location,
+          job_type: form.type as any,
+          salary_range: form.salary || 'Competitive',
+          description: form.description || 'No description provided.',
+          skills: [],
+          requirements: [],
+          responsibilities: [],
+          status: 'active',
+          created_at: new Date().toISOString(),
+          work_hours_per_week: parseInt(form.workHours) || 40
+        };
+
+        console.log('[AdminJobs] Posting job:', newJob);
+        const newId = await jobsAPI.create(newJob);
+        console.log('[AdminJobs] Created job ID:', newId);
+        
+        if (newId) {
+           const createdJob = { ...newJob, id: newId } as JobOffer;
+           setJobs([createdJob, ...jobs]);
+           checkJobAgainstAlerts(createdJob);
+           setIsModalOpen(false);
+           setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+        } else {
+           alert('Failed to create job. Check the browser console for details.');
+        }
       }
     } catch (err) {
       console.error('[AdminJobs] handlePostJob error:', err);
@@ -199,7 +219,7 @@ export default function AdminJobs() {
           <h1 className="text-3xl font-bold italic text-slate-900 dark:text-white">Manage Job Offers</h1>
           <p className="text-slate-500">Create, edit, and monitor your current job openings.</p>
         </div>
-        <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
+        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
           <Plus className="w-5 h-5" /> Post Job Offer
         </Button>
       </div>
@@ -287,9 +307,26 @@ export default function AdminJobs() {
                    </div>
   
                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-400"><Eye className="w-5 h-5" /></Button>
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-500"><Edit2 className="w-5 h-5" /></Button>
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-rose-500"><Trash2 className="w-5 h-5" /></Button>
+                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-400" onClick={() => navigate('/jobs/' + job.id)}><Eye className="w-5 h-5" /></Button>
+                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-500" onClick={() => {
+                         setEditingJobId(job.id);
+                         setForm({
+                            title: job.title,
+                            company: job.company,
+                            location: job.location,
+                            salary: job.salary_range || '',
+                            type: job.job_type,
+                            description: job.description || '',
+                            workHours: (job.work_hours_per_week || 40).toString()
+                         });
+                         setIsModalOpen(true);
+                      }}><Edit2 className="w-5 h-5" /></Button>
+                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-rose-500" onClick={async () => {
+                         if (confirm('Are you sure you want to delete this job?')) {
+                            await jobsAPI.delete(job.id);
+                            setJobs(prev => prev.filter(j => j.id !== job.id));
+                         }
+                      }}><Trash2 className="w-5 h-5" /></Button>
                    </div>
                 </div>
               </GlassCard>
@@ -362,7 +399,7 @@ export default function AdminJobs() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
                 
                 <div className="flex justify-between items-center mb-8 relative z-10">
-                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">Post a New Job</h2>
+                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">{editingJobId ? 'Edit Job Offer' : 'Post a New Job'}</h2>
                    <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500">
                      <Plus className="w-6 h-6 rotate-45" />
                    </button>
@@ -424,10 +461,10 @@ export default function AdminJobs() {
                     </div>
                     <div className="col-span-2 pt-6">
                        <Button type="submit" className="w-full h-14 text-lg" isLoading={isPosting}>
-                         {isPosting ? 'Posting Live...' : 'Create Job Posting'}
+                         {isPosting ? (editingJobId ? 'Updating...' : 'Posting Live...') : (editingJobId ? 'Update Job Posting' : 'Create Job Posting')}
                        </Button>
                        <p className="text-center text-[10px] text-slate-600 mt-4 uppercase font-bold tracking-widest">
-                         Posting will trigger relevant job alerts to registered candidates.
+                         {editingJobId ? 'Updates will reflect immediately.' : 'Posting will trigger relevant job alerts to registered candidates.'}
                        </p>
                     </div>
                  </form>
