@@ -315,6 +315,11 @@ export default function Login() {
                     exit={{ opacity: 0, y: -10 }}
                     className="relative z-10 space-y-4"
                   >
+                    <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3">
+                      <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                      <p className="text-xs text-rose-300 font-medium leading-relaxed">{resetError}</p>
+                    </div>
+
                     <div className="flex gap-3">
                       <Button
                         type="button"
