@@ -40,7 +40,9 @@ export default function AdminJobs() {
         setIsLoading(true);
         try {
            const company = await companiesAPI.getByOwnerId(user.id);
+           console.log('[AdminJobs] Company lookup for user', user.id, '→', company);
            if (!company) {
+             console.warn('[AdminJobs] No company found for this recruiter. Job posting will be disabled.');
              setJobs([]);
              setApplications([]);
              return;
@@ -56,7 +58,7 @@ export default function AdminJobs() {
            setJobs(fetchedJobs);
            setApplications(allApps.filter(a => jobIds.has(a.job_id)));
         } catch(e) {
-           console.error(e);
+           console.error('[AdminJobs] fetchData error:', e);
         } finally {
            setIsLoading(false);
         }
@@ -66,33 +68,51 @@ export default function AdminJobs() {
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id || !companyId) return;
+    if (!user?.id) {
+      alert('You must be logged in to post a job.');
+      return;
+    }
+    if (!companyId) {
+      alert('No company profile found for your account. Please contact support or create a company first.');
+      return;
+    }
     setIsPosting(true);
 
-    const newJob: Omit<JobOffer, 'id'> = {
-      title: form.title,
-      company: form.company,
-      company_id: companyId,
-      location: form.location,
-      job_type: form.type as any,
-      salary_range: form.salary || 'Competitive',
-      description: form.description || 'No description provided.',
-      skills: [],
-      requirements: [],
-      responsibilities: [],
-      status: 'active',
-      created_at: new Date().toISOString()
-    };
+    try {
+      const newJob: Omit<JobOffer, 'id'> = {
+        title: form.title,
+        company: form.company,
+        company_id: companyId,
+        location: form.location,
+        job_type: form.type as any,
+        salary_range: form.salary || 'Competitive',
+        description: form.description || 'No description provided.',
+        skills: [],
+        requirements: [],
+        responsibilities: [],
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
 
-    const newId = await jobsAPI.create(newJob);
-    if (newId) {
-       const createdJob = { ...newJob, id: newId } as JobOffer;
-       setJobs([createdJob, ...jobs]);
-       checkJobAgainstAlerts(createdJob);
-       setIsModalOpen(false);
-       setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '' });
+      console.log('[AdminJobs] Posting job:', newJob);
+      const newId = await jobsAPI.create(newJob);
+      console.log('[AdminJobs] Created job ID:', newId);
+      
+      if (newId) {
+         const createdJob = { ...newJob, id: newId } as JobOffer;
+         setJobs([createdJob, ...jobs]);
+         checkJobAgainstAlerts(createdJob);
+         setIsModalOpen(false);
+         setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '' });
+      } else {
+         alert('Failed to create job. Check the browser console for details.');
+      }
+    } catch (err) {
+      console.error('[AdminJobs] handlePostJob error:', err);
+      alert('Error creating job posting. See console for details.');
+    } finally {
+      setIsPosting(false);
     }
-    setIsPosting(false);
   };
 
   const filteredJobs = jobs.filter(j => 
