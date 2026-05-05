@@ -72,7 +72,12 @@ export default function Login() {
       setResetStatus('success');
     } catch (err: any) {
       console.error('Reset error:', err);
-      setResetError(err.message || 'Failed to send reset email. Please try again.');
+      const msg = err.message?.toLowerCase() || '';
+      if (msg.includes('rate limit') || err.status === 429) {
+        setResetError('Too many attempts. Please wait at least 60 seconds before trying again.');
+      } else {
+        setResetError(err.message || 'Failed to send reset email. Please try again.');
+      }
       setResetStatus('error');
     }
   };
