@@ -91,21 +91,27 @@ export default function AdminApplications() {
   ) => {
     setProcessingId(id);
     try {
+      // 1. Update the backend
       await applicationsAPI.updateStatus(id, newStatus);
-      const updatedApps = apps.map((app) => {
-        if (app.id === id) {
-          addNotification({
-            userId: app.user_id,
-            title: "Application Status Updated",
-            message: `Your application for ${getAppJobTitle(app)} at ${getAppCompanyName(app)} has been updated to ${newStatus.toUpperCase()}.`,
-            type: "status_change",
-            meta: { applicationId: app.id, status: newStatus },
-          });
-          return { ...app, status: newStatus };
-        }
-        return app;
-      });
-      setApps(updatedApps);
+      
+      // 2. Find the application to get the candidate ID
+      const targetApp = apps.find(a => a.id === id);
+      
+      if (targetApp) {
+        // 3. Notify the candidate (targetApp.user_id is the applicant)
+        await addNotification({
+          userId: targetApp.user_id,
+          title: "Application Status Updated",
+          message: `Your application for ${getAppJobTitle(targetApp)} at ${getAppCompanyName(targetApp)} has been updated to ${newStatus.toUpperCase()}.`,
+          type: "status_change",
+          meta: { applicationId: id, status: newStatus },
+        });
+
+        // 4. Update local state
+        setApps(prev => prev.map(app => 
+          app.id === id ? { ...app, status: newStatus } : app
+        ));
+      }
     } catch (err) {
       console.error("Status update failed:", err);
     } finally {
