@@ -59,7 +59,7 @@ export default function ApplicationDetailsModal({
             </div>
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic flex flex-col">
-                <span>{getAppCandidateName(app)}</span>
+                <span>{getAppCandidateName(app) === 'user' || !getAppCandidateName(app) ? (getAppCandidateEmail(app) || 'Unknown Candidate') : getAppCandidateName(app)}</span>
                 <span className="text-sm font-medium text-indigo-400 not-italic tracking-wide">
                   {getAppCandidateEmail(app)}
                 </span>
@@ -144,22 +144,27 @@ export default function ApplicationDetailsModal({
                             src={resumeUrl} 
                             title="CV Preview" 
                             className="w-full h-full border-0 flex-1"
+                            onError={(e) => console.error("Iframe load error:", e)}
                           />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 hover:opacity-100 transition-opacity bg-slate-900/40 backdrop-blur-[2px]">
+                             <p className="text-white font-bold bg-slate-900/80 px-4 py-2 rounded-xl">Document Preview Mode</p>
+                          </div>
                           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg"
-                              onClick={() => window.open(resumeUrl, '_blank')}
-                            >
-                              <ExternalLink className="w-4 h-4 mr-2" /> Open in New Tab
-                            </Button>
+                             <Button 
+                               variant="outline" 
+                               size="sm" 
+                               className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg"
+                               onClick={() => window.open(resumeUrl, '_blank')}
+                             >
+                               <ExternalLink className="w-4 h-4 mr-2" /> Open in New Tab
+                             </Button>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-                          <span className="ml-2 text-slate-500">Loading document...</span>
+                        <div className="flex flex-col h-full items-center justify-center p-8 text-center">
+                          <Loader2 className="w-12 h-12 animate-spin text-indigo-400 mb-4" />
+                          <p className="text-slate-500 font-bold italic mb-2">RETRIEVING DOCUMENT...</p>
+                          <p className="text-xs text-slate-400 max-w-[200px]">If this takes too long, the file might be unavailable or blocked by your browser.</p>
                         </div>
                       )
                     ) : (

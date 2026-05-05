@@ -116,7 +116,7 @@ export default function Jobs() {
 
       return matchSearch && matchType && matchSize && matchSalary && matchSkills && matchIndustry;
     });
-  }, [search, filterType, filterSize, filterSalary, selectedSkills, filterIndustry]);
+  }, [search, filterType, filterSize, filterSalary, selectedSkills, filterIndustry, jobs, companies]);
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-12">

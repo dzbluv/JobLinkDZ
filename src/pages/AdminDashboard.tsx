@@ -177,8 +177,13 @@ export default function AdminDashboard() {
                            <div className="flex items-center gap-3">
                                <Avatar name={getAppCandidateName(app)} size="sm" />
                                <div className="flex flex-col">
-                                 <span className="font-bold text-sm text-slate-900 dark:text-white">{getAppCandidateName(app)}</span>
-                                 <span className="text-[10px] text-slate-500 font-medium">{getAppCandidateEmail(app)}</span>
+                                 <Link 
+                                    to={`/profile/${app.user_id}`}
+                                    className="text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-500 transition-colors"
+                                  >
+                                    {getAppCandidateName(app)}
+                                  </Link>
+                                  <span className="text-[10px] text-slate-500 font-medium">{getAppCandidateEmail(app)}</span>
                                </div>
                            </div>
                         </td>
@@ -215,27 +220,27 @@ export default function AdminDashboard() {
                                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                      className="absolute right-0 top-full mt-1 w-48 glass rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50"
                                    >
-                                     <button onClick={() => { setSelectedApp(app); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                       <Eye className="w-4 h-4" /> View Application
-                                     </button>
-                                     <button onClick={() => { navigate('/profile'); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                       <Users className="w-4 h-4" /> View Profile
-                                     </button>
-                                     <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
-                                     <button 
-                                       disabled={app.status === 'accepted'} 
-                                       onClick={() => handleStatusChange(app.id, 'accepted')} 
-                                       className="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg text-sm transition-colors text-emerald-600 dark:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                     >
-                                       <CheckCircle className="w-4 h-4" /> Accept
-                                     </button>
-                                     <button 
-                                       disabled={app.status === 'rejected'} 
-                                       onClick={() => handleStatusChange(app.id, 'rejected')} 
-                                       className="w-full text-left px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-sm transition-colors text-rose-600 dark:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                     >
-                                       <XCircle className="w-4 h-4" /> Refuse
-                                     </button>
+                                     <button onClick={() => { setSelectedApp(app); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium">
+                                        <Eye className="w-4 h-4 text-indigo-400" /> View Application
+                                      </button>
+                                      <button onClick={() => { navigate(`/profile/${app.user_id}`); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium">
+                                        <Users className="w-4 h-4 text-indigo-400" /> View Profile
+                                      </button>
+                                      <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+                                      <button 
+                                        disabled={app.status === 'accepted'} 
+                                        onClick={() => { handleStatusChange(app.id, 'accepted'); setOpenMenuId(null); }} 
+                                        className="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg text-sm transition-colors text-emerald-600 dark:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                                      >
+                                        <CheckCircle className="w-4 h-4" /> Accept Candidate
+                                      </button>
+                                      <button 
+                                        disabled={app.status === 'rejected'} 
+                                        onClick={() => { handleStatusChange(app.id, 'rejected'); setOpenMenuId(null); }} 
+                                        className="w-full text-left px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-sm transition-colors text-rose-600 dark:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                                      >
+                                        <XCircle className="w-4 h-4" /> Refuse Application
+                                      </button>
                                    </motion.div>
                                  </>
                                )}

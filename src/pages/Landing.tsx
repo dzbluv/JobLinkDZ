@@ -24,14 +24,6 @@ export default function Landing() {
       }
     }
     loadJobs();
-
-    // Toggle no-scrollbar class on body and html
-    document.body.classList.add('no-scrollbar');
-    document.documentElement.classList.add('no-scrollbar');
-    return () => {
-      document.body.classList.remove('no-scrollbar');
-      document.documentElement.classList.remove('no-scrollbar');
-    };
   }, []);
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -47,7 +39,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="relative overflow-x-hidden min-h-screen text-foreground transition-colors duration-500">
+    <div className="relative text-foreground transition-colors duration-500">
 
       {/* Abstract Background Glows */}
       <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-indigo-600/10 dark:bg-indigo-600/20 blur-[120px] rounded-full animate-pulse" />
@@ -56,7 +48,7 @@ export default function Landing() {
 
       <div className="relative overflow-hidden w-full">
         <InteractiveCircles />
-        <section className="relative px-8 pt-20 pb-32 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+        <section className="relative px-8 pt-12 pb-32 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
           <motion.div 
           className="flex-1 text-center md:text-left"
           initial={{ opacity: 0, x: -50 }}

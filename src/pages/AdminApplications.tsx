@@ -33,6 +33,7 @@ import { GlassCard, Badge, Input } from "../components/ui/Shared";
 import { Button } from "../components/ui/Button";
 import { motion, AnimatePresence } from "motion/react";
 import { useNotifications } from "../context/NotificationContext";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Avatar } from "../components/ui/Avatar";
 import ApplicationDetailsModal from "../components/admin/ApplicationDetailsModal";
@@ -247,10 +248,13 @@ export default function AdminApplications() {
                           <Avatar name={getAppCandidateName(app)} size="sm" />
                         </div>
                         <div>
-                          <p className="font-bold text-sm">
+                          <Link 
+                            to={`/profile/${app.user_id}`}
+                            className="font-bold text-sm text-slate-900 dark:text-white hover:text-indigo-500 transition-colors"
+                          >
                             {getAppCandidateName(app)}
-                          </p>
-                          <p className="text-[10px] text-slate-500">
+                          </Link>
+                          <p className="text-[10px] text-slate-500 font-medium">
                             {getAppCandidateEmail(app)}
                           </p>
                         </div>

@@ -341,27 +341,40 @@ export default function AdminJobs() {
                    </div>
   
                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-400" onClick={() => navigate('/jobs/' + job.id)}><Eye className="w-5 h-5" /></Button>
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-500" onClick={() => {
-                         setEditingJobId(job.id);
-                         setForm({
-                            title: job.title,
-                            company: job.company,
-                            location: job.location,
-                            salary: job.salary_range || '',
-                            type: job.job_type,
-                            description: job.description || '',
-                            workHours: (job.work_hours_per_week || 40).toString()
-                         });
-                         setIsModalOpen(true);
-                      }}><Edit2 className="w-5 h-5" /></Button>
-                      <Button variant="ghost" size="icon" className="text-slate-500 hover:text-rose-500" onClick={async () => {
-                         if (confirm('Are you sure you want to delete this job?')) {
-                            await jobsAPI.delete(job.id);
-                            setJobs(prev => prev.filter(j => j.id !== job.id));
-                         }
-                      }}><Trash2 className="w-5 h-5" /></Button>
-                   </div>
+                       <Button 
+                         variant="ghost" 
+                         size="icon" 
+                         className="text-slate-500 hover:text-indigo-500" 
+                         title="View Public Post"
+                         onClick={() => window.open(`/jobs/${job.id}`, '_blank')}
+                       >
+                         <Eye className="w-5 h-5" />
+                       </Button>
+                       <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-500" title="Edit Job" onClick={() => {
+                          setEditingJobId(job.id);
+                          setForm({
+                             title: job.title,
+                             company: job.company,
+                             location: job.location,
+                             salary: job.salary_range || '',
+                             type: job.job_type,
+                             description: job.description || '',
+                             workHours: (job.work_hours_per_week || 40).toString()
+                          });
+                          setIsModalOpen(true);
+                       }}><Edit2 className="w-5 h-5" /></Button>
+                       <Button variant="ghost" size="icon" className="text-slate-500 hover:text-rose-500" title="Delete Job" onClick={async () => {
+                          if (confirm('Are you sure you want to delete this job?')) {
+                             try {
+                               await jobsAPI.delete(job.id);
+                               setJobs(prev => prev.filter(j => j.id !== job.id));
+                             } catch (err) {
+                               console.error("Failed to delete job:", err);
+                               alert("Failed to delete job. It might have active applications.");
+                             }
+                          }
+                       }}><Trash2 className="w-5 h-5" /></Button>
+                    </div>
                 </div>
               </GlassCard>
             </motion.div>

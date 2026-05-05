@@ -384,7 +384,6 @@ export function Navbar() {
           </>
         )}
       </AnimatePresence>
-      <div className="h-24 md:h-28" /> {/* Spacer for fixed nav */}
     </>
   );
 }

@@ -92,6 +92,14 @@ function AnimatedRoutes() {
             } 
           />
           <Route 
+            path="/profile/:userId" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/settings" 
             element={
               <ProtectedRoute>
@@ -147,7 +155,7 @@ export default function App() {
                 <Router>
                 <div className="min-h-screen flex flex-col">
                   <Navbar />
-                  <main className="flex-grow">
+                  <main className="flex-grow pt-16">
                     <AnimatedRoutes />
                   </main>
                   <Footer />

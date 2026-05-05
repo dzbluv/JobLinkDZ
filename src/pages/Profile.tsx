@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Briefcase, Camera, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette, AlertCircle, Building2, Loader2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { User, Mail, Phone, MapPin, Briefcase, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette, AlertCircle, Building2, Loader2 } from 'lucide-react';
+import { useAuth, USER_COLUMNS } from '../context/AuthContext';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { GlassCard, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
@@ -17,68 +17,85 @@ const COMMON_SKILLS = [
 
 const COLOR_OPTIONS = Object.keys(COLOR_PALETTE);
 
+import { useParams } from 'react-router-dom';
+
 export default function Profile() {
-  const { user, refreshUser } = useAuth();
+  const { userId } = useParams();
+  const { user: currentUser, refreshUser } = useAuth();
+  const [targetUser, setTargetUser] = useState<any>(null);
+  const [isPublicView, setIsPublicView] = useState(false);
+  const [isLoadingPublic, setIsLoadingPublic] = useState(false);
+
   const [formData, setFormData] = useState({
-    fullName: user?.full_name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    location: user?.location || '',
-    bio: user?.bio || '',
-    githubUrl: user?.github_url || '',
-    portfolioUrl: user?.portfolio_url || '',
-    linkedin: user?.linkedin_url || '',
-    skills: user?.skills || []
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    bio: '',
+    githubUrl: '',
+    portfolioUrl: '',
+    linkedin: '',
+    skills: [] as string[]
   });
   
-  // Avatar customization state
-  const [avatarInitials, setAvatarInitials] = useState(user?.avatar_initials || '');
-  const [avatarColor, setAvatarColor] = useState(user?.avatar_color || getColorForName(user?.full_name || 'User'));
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
-  
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Image must be less than 2MB');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  // State for skills
   const [skillInput, setSkillInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Sync form state when user data changes
+  // Handle fetching target user data
   useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user.full_name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        location: user.location || '',
-        bio: user.bio || '',
-        githubUrl: user.github_url || '',
-        portfolioUrl: user.portfolio_url || '',
-        linkedin: user.linkedin_url || '',
-        skills: user.skills || []
-      });
-      setAvatarInitials(user.avatar_initials || '');
-      setAvatarColor(user.avatar_color || getColorForName(user.full_name || 'User'));
+    async function fetchTargetUser() {
+      if (userId && userId !== currentUser?.id) {
+        setIsPublicView(true);
+        setIsLoadingPublic(true);
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select(USER_COLUMNS)
+            .eq('id', userId)
+            .single();
+          
+          if (data && !error) {
+            setTargetUser(data);
+          } else {
+            setError("Could not find this profile.");
+          }
+        } catch (err) {
+          console.error("Error fetching public profile:", err);
+          setError("An error occurred while loading the profile.");
+        } finally {
+          setIsLoadingPublic(false);
+        }
+      } else {
+        setIsPublicView(false);
+        setTargetUser(currentUser);
+      }
     }
-  }, [user]);
+    fetchTargetUser();
+  }, [userId, currentUser]);
 
-  // For recruiters (admin role), they can customize initials and colors
-  const isRecruiter = user?.role === 'admin';
+  // Sync form state when target user data changes
+  useEffect(() => {
+    if (targetUser) {
+      setFormData({
+        fullName: targetUser.full_name || '',
+        email: targetUser.email || '',
+        phone: targetUser.phone || '',
+        location: targetUser.location || '',
+        bio: targetUser.bio || '',
+        githubUrl: targetUser.github_url || '',
+        portfolioUrl: targetUser.portfolio_url || '',
+        linkedin: targetUser.linkedin_url || '',
+        skills: targetUser.skills || []
+      });
+    }
+  }, [targetUser]);
+
+  // For recruiters (admin role), they can customize initials and colors for THEMSELVES
+  const isRecruiter = targetUser?.role === 'admin';
+  const canEdit = !isPublicView;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,12 +113,9 @@ export default function Profile() {
         portfolio_url: formData.portfolioUrl || null,
         linkedin_url: formData.linkedin || null,
         skills: formData.skills.length > 0 ? formData.skills : null,
-        avatar_initials: isRecruiter && avatarInitials ? avatarInitials : null,
-        avatar_color: avatarColor || null,
-        avatar_url: avatarUrl || null,
       };
 
-      if (!user?.id) {
+      if (!currentUser?.id) {
         throw new Error('User not authenticated');
       }
 
@@ -109,7 +123,7 @@ export default function Profile() {
       const { error: updateError } = await supabase
         .from('users')
         .update(payload)
-        .eq('id', user.id);
+        .eq('id', currentUser.id);
 
       if (updateError) throw updateError;
 
@@ -153,96 +167,36 @@ export default function Profile() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-12"
       >
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white italic">Profile Settings</h1>
-        <p className="text-slate-500 font-medium">Elevate your professional presence and unlock new opportunities.</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white italic">
+          {isPublicView ? `${formData.fullName}'s Profile` : 'Profile Settings'}
+        </h1>
+        <p className="text-slate-500 font-medium">
+          {isPublicView ? 'Professional experience and expertise summary.' : 'Elevate your professional presence and unlock new opportunities.'}
+        </p>
       </motion.div>
+
+      {isLoadingPublic ? (
+        <div className="flex flex-col items-center justify-center py-20 text-indigo-500">
+          <Loader2 className="w-12 h-12 animate-spin mb-4" />
+          <p className="text-sm font-bold uppercase tracking-widest italic">Retrieving Profile...</p>
+        </div>
+      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-1 space-y-8">
            <GlassCard className="p-8 text-center bg-white dark:bg-white/5 border-slate-200 dark:border-white/10" hover={false}>
-              <div className="relative inline-block group mb-6 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
-                  {avatarUrl ? (
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-white/10 mx-auto relative group">
-                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                        <Camera className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="relative inline-block group">
-                      <Avatar 
-                        name={formData.fullName} 
-                        initials={isRecruiter && avatarInitials ? avatarInitials : undefined}
-                        color={avatarColor}
-                        size="profile"
-                        role={user?.role}
-                      />
-                      <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                        <Camera className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  )}
+              <div className="mb-6 mx-auto">
+                  <div className="relative inline-block">
+                    <Avatar 
+                      name={formData.fullName} 
+                      size="profile"
+                      role={targetUser?.role}
+                    />
+                  </div>
                </div>
                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic mb-1">{formData.fullName}</h2>
-               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{user?.role} Identity</p>
+               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{targetUser?.role} Identity</p>
                
-               {/* Avatar Customization for Recruiters */}
-               {isRecruiter && (
-                 <div className="mb-8 p-5 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl text-left space-y-4">
-                   <div className="flex items-center gap-2 text-indigo-400">
-                     <Palette className="w-4 h-4" />
-                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Customize Avatar</span>
-                   </div>
-                   
-                   {/* Initials input */}
-                   <div>
-                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                       Custom Initials
-                     </label>
-                     <input
-                       type="text"
-                       maxLength={2}
-                       value={avatarInitials}
-                       onChange={(e) => setAvatarInitials(e.target.value.toUpperCase().slice(0, 2))}
-                       placeholder={getInitials(formData.fullName)}
-                       className="w-full px-3 py-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white font-bold text-center uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-slate-600"
-                     />
-                     <p className="text-[9px] text-slate-600 mt-1 italic">Leave empty for auto-initials</p>
-                   </div>
-                   
-                   {/* Color picker */}
-                   <div>
-                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                       Accent Color
-                     </label>
-                     <div className="flex flex-wrap gap-2">
-                       {COLOR_OPTIONS.map((colorName) => {
-                         const colorStyle = COLOR_PALETTE[colorName as keyof typeof COLOR_PALETTE];
-                         return (
-                           <button
-                             key={colorName}
-                             type="button"
-                             onClick={() => setAvatarColor(colorName)}
-                             className={cn(
-                               'w-8 h-8 rounded-xl border-2 transition-all',
-                               colorStyle.bg,
-                               colorStyle.text,
-                               'hover:scale-110',
-                               avatarColor === colorName 
-                                 ? 'border-white scale-110 shadow-lg' 
-                                 : 'border-transparent'
-                             )}
-                             title={colorName}
-                           >
-                             <span className="text-[10px] font-black">A</span>
-                           </button>
-                         );
-                       })}
-                     </div>
-                   </div>
-                 </div>
-               )}
               
               <div className="flex justify-center gap-4">
                  <a href={formData.linkedin ? `https://${formData.linkedin}` : '#'} target="_blank" rel="noopener noreferrer">
@@ -287,7 +241,7 @@ export default function Profile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="md:col-span-2">
                       <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
-                         <User className="w-5 h-5 text-indigo-400" /> Personal Identity
+                         <User className="w-5 h-5 text-indigo-400" /> {isPublicView ? 'Professional Profile' : 'Personal Identity'}
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
                    </div>
@@ -295,24 +249,28 @@ export default function Profile() {
                      label="Full Name" 
                      value={formData.fullName} 
                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                     readOnly={!canEdit}
                    />
                    <Input 
                      label="Email Address" 
                      type="email" 
                      value={formData.email} 
                      disabled
+                     readOnly
                    />
                    <Input 
                      label="Phone Number" 
-                     placeholder="+213 5XX XX XX XX" 
+                     placeholder={canEdit ? "+213 5XX XX XX XX" : "N/A"} 
                      value={formData.phone} 
                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                     readOnly={!canEdit}
                    />
                    <Input 
                      label="Location" 
-                     placeholder="Algiers, Algeria" 
+                     placeholder={canEdit ? "Algiers, Algeria" : "N/A"} 
                      value={formData.location} 
                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                     readOnly={!canEdit}
                    />
                    <div className="md:col-span-2">
                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -321,9 +279,13 @@ export default function Profile() {
                      <textarea
                        value={formData.bio}
                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                       placeholder="Tell us about yourself, your experience, and what you're looking for..."
+                       placeholder={canEdit ? "Tell us about yourself, your experience, and what you're looking for..." : "No bio available."}
                        rows={4}
-                       className="w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none"
+                       readOnly={!canEdit}
+                       className={cn(
+                         "w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none",
+                         !canEdit && "opacity-80"
+                       )}
                      />
                    </div>
                 </div>
@@ -336,56 +298,60 @@ export default function Profile() {
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
                    </div>
                    
-                   <div className="space-y-4">
-                     <div className="relative">
-                       <Input 
-                         label="Add Skills" 
-                         placeholder="Type a skill and press Enter" 
-                         value={skillInput}
-                         onChange={(e) => setSkillInput(e.target.value)}
-                         onKeyDown={(e) => {
-                           if (e.key === 'Enter') {
-                             e.preventDefault();
-                             addSkill(skillInput);
-                           }
-                         }}
-                       />
-                       <AnimatePresence>
-                         {skillInput && (
-                           <motion.div 
-                             initial={{ opacity: 0, y: -10 }}
-                             animate={{ opacity: 1, y: 0 }}
-                             exit={{ opacity: 0, y: -10 }}
-                             className="absolute z-50 left-0 right-0 top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden p-2"
-                           >
-                             {suggestions.length > 0 ? suggestions.map(skill => (
-                               <button
-                                 key={skill}
-                                 type="button"
-                                 onClick={() => addSkill(skill)}
-                                 className="w-full text-left px-4 py-3 hover:bg-white dark:bg-white/5 rounded-xl text-sm text-slate-300 transition-colors flex items-center justify-between group"
-                               >
-                                 {skill}
-                                 <Plus className="w-4 h-4 text-slate-600 group-hover:text-indigo-400" />
-                               </button>
-                             )) : (
-                               <div className="px-4 py-3 text-xs text-slate-500 italic">Press Enter to add "{skillInput}"</div>
-                             )}
-                           </motion.div>
-                         )}
-                       </AnimatePresence>
+                   {canEdit && (
+                     <div className="space-y-4">
+                       <div className="relative">
+                         <Input 
+                           label="Add Skills" 
+                           placeholder="Type a skill and press Enter" 
+                           value={skillInput}
+                           onChange={(e) => setSkillInput(e.target.value)}
+                           onKeyDown={(e) => {
+                             if (e.key === 'Enter') {
+                               e.preventDefault();
+                               addSkill(skillInput);
+                             }
+                           }}
+                         />
+                         <AnimatePresence>
+                           {skillInput && (
+                             <motion.div 
+                               initial={{ opacity: 0, y: -10 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               exit={{ opacity: 0, y: -10 }}
+                               className="absolute z-50 left-0 right-0 top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden p-2"
+                             >
+                               {suggestions.length > 0 ? suggestions.map(skill => (
+                                 <button
+                                   key={skill}
+                                   type="button"
+                                   onClick={() => addSkill(skill)}
+                                   className="w-full text-left px-4 py-3 hover:bg-white dark:bg-white/5 rounded-xl text-sm text-slate-300 transition-colors flex items-center justify-between group"
+                                 >
+                                   {skill}
+                                   <Plus className="w-4 h-4 text-slate-600 group-hover:text-indigo-400" />
+                                 </button>
+                               )) : (
+                                 <div className="px-4 py-3 text-xs text-slate-500 italic">Press Enter to add "{skillInput}"</div>
+                               )}
+                             </motion.div>
+                           )}
+                         </AnimatePresence>
+                       </div>
                      </div>
+                   )}
 
-                     <div className="flex flex-wrap gap-2 pt-2">
-                       {formData.skills.map(skill => (
-                         <motion.span 
-                           layout
-                           initial={{ scale: 0.8, opacity: 0 }}
-                           animate={{ scale: 1, opacity: 1 }}
-                           key={skill} 
-                           className="flex items-center gap-2 px-4 py-2 bg-slate-100 border border-slate-200 dark:bg-white/5 dark:border-white/10 rounded-2xl text-xs font-bold text-slate-900 dark:text-white group"
-                         >
-                           {skill}
+                   <div className="flex flex-wrap gap-2 pt-2">
+                     {formData.skills.map(skill => (
+                       <motion.span 
+                         layout
+                         initial={{ scale: 0.8, opacity: 0 }}
+                         animate={{ scale: 1, opacity: 1 }}
+                         key={skill} 
+                         className="flex items-center gap-2 px-4 py-2 bg-slate-100 border border-slate-200 dark:bg-white/5 dark:border-white/10 rounded-2xl text-xs font-bold text-slate-900 dark:text-white group"
+                       >
+                         {skill}
+                         {canEdit && (
                            <button 
                              type="button"
                              onClick={() => removeSkill(skill)}
@@ -393,9 +359,9 @@ export default function Profile() {
                            >
                              <X className="w-3 h-3" />
                            </button>
-                         </motion.span>
-                       ))}
-                     </div>
+                         )}
+                       </motion.span>
+                     ))}
                    </div>
                 </div>
 
@@ -409,21 +375,24 @@ export default function Profile() {
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <Input 
                        label="GitHub Profile" 
-                       placeholder="github.com/username" 
+                       placeholder={canEdit ? "github.com/username" : "N/A"} 
                        value={formData.githubUrl} 
                        onChange={(e) => setFormData({...formData, githubUrl: e.target.value})}
+                       readOnly={!canEdit}
                      />
                      <Input 
                        label="Portfolio URL" 
-                       placeholder="https://behance.net/username" 
+                       placeholder={canEdit ? "https://behance.net/username" : "N/A"} 
                        value={formData.portfolioUrl} 
                        onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})}
+                       readOnly={!canEdit}
                      />
                      <Input 
                        label="LinkedIn Profile" 
-                       placeholder="linkedin.com/in/username" 
+                       placeholder={canEdit ? "linkedin.com/in/username" : "N/A"} 
                        value={formData.linkedin} 
                        onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
+                       readOnly={!canEdit}
                      />
                    </div>
                 </div>
@@ -443,38 +412,41 @@ export default function Profile() {
                   )}
                 </AnimatePresence>
 
-                <div className="pt-8 flex items-center justify-end gap-6">
-                   <AnimatePresence>
-                     {showSuccess && (
-                       <motion.div
-                         initial={{ opacity: 0, x: 10 }}
-                         animate={{ opacity: 1, x: 0 }}
-                         exit={{ opacity: 0, x: 10 }}
-                         className="flex items-center gap-2 text-emerald-400 font-medium italic text-sm"
-                       >
-                         <Check className="w-4 h-4" />
-                         Profile updated successfully
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
-                   <Button 
-                     type="submit" 
-                     className={cn(
-                       "h-14 px-12 gap-3 rounded-[1.5rem] transition-all duration-300 text-lg italic",
-                       showSuccess 
-                        ? "bg-emerald-500 hover:bg-emerald-400 shadow-xl shadow-emerald-500/20" 
-                        : "bg-indigo-600 hover:bg-indigo-500 shadow-xl shadow-indigo-600/20"
-                     )} 
-                     isLoading={isSaving}
-                   >
-                      <Save className="w-6 h-6" /> 
-                      {showSuccess ? "Success!" : "Save Profile"}
-                   </Button>
-                </div>
+                {canEdit && (
+                  <div className="pt-8 flex items-center justify-end gap-6">
+                    <AnimatePresence>
+                      {showSuccess && (
+                        <motion.div
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          className="flex items-center gap-2 text-emerald-400 font-medium italic text-sm"
+                        >
+                          <Check className="w-4 h-4" />
+                          Profile updated successfully
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <Button 
+                      type="submit" 
+                      className={cn(
+                        "h-14 px-12 gap-3 rounded-[1.5rem] transition-all duration-300 text-lg italic",
+                        showSuccess 
+                          ? "bg-emerald-500 hover:bg-emerald-400 shadow-xl shadow-emerald-500/20" 
+                          : "bg-indigo-600 hover:bg-indigo-500 shadow-xl shadow-indigo-600/20"
+                      )} 
+                      isLoading={isSaving}
+                    >
+                        <Save className="w-6 h-6" /> 
+                        {showSuccess ? "Success!" : "Save Profile"}
+                    </Button>
+                  </div>
+                )}
               </form>
            </GlassCard>
         </div>
       </div>
+      )}
     </div>
   );
 }

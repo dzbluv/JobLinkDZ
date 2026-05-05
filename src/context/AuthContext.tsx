@@ -18,6 +18,8 @@ export interface User {
   avatar_color?: string | null;
 }
 
+export const USER_COLUMNS = 'id, full_name, email, role, phone, location, bio, github_url, portfolio_url, linkedin_url, skills, avatar_initials, avatar_color';
+
 interface RegisterPayload {
   full_name: string;
   email: string;
@@ -50,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, full_name, email, role, phone, location')
+          .select(USER_COLUMNS)
           .eq('id', sessionUser.id)
           .single();
 
@@ -105,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userId = fallbackProfile?.id;
       if (!userId || !fallbackProfile) return { user: null, error: 'User data not found.' };
       
-      const { data: profile, error: profileError } = await supabase.from('users').select('id, full_name, email, role, phone, location').eq('id', userId).single();
+      const { data: profile, error: profileError } = await supabase.from('users').select(USER_COLUMNS).eq('id', userId).single();
       
       if (profileError || !profile) {
         await supabase.from('users').upsert(fallbackProfile);
@@ -166,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const newProfile = { id, full_name, email, role } as User;
-      const { error: insertError } = await supabase.from('users').insert(newProfile).select();
+      const { error: insertError } = await supabase.from('users').insert(newProfile).select(USER_COLUMNS);
       if (insertError) console.warn('Profile insert error:', insertError);
 
       // Auto-create company for recruiters
@@ -214,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Only select columns we know exist, to avoid schema errors
       const { data, error } = await supabase
         .from('users')
-        .select('id, full_name, email, role, phone, location')
+        .select(USER_COLUMNS)
         .eq('id', session.user.id)
         .single();
       if (data && !error) {
