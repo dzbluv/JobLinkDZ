@@ -135,6 +135,40 @@ export default function AdminJobs() {
     }
   };
 
+  const handleExportCSV = () => {
+    const jobsToExport = selectedJobs.length > 0 
+      ? jobs.filter(j => selectedJobs.includes(j.id))
+      : filteredJobs;
+    
+    if (jobsToExport.length === 0) return;
+
+    const headers = ['Title', 'Company', 'Location', 'Type', 'Salary', 'Status', 'Date Posted'];
+    const rows = jobsToExport.map(job => [
+      job.title,
+      job.company,
+      job.location,
+      job.job_type,
+      job.salary_range,
+      job.status,
+      new Date(job.created_at).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `job_postings_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-8 py-12 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
@@ -162,7 +196,7 @@ export default function AdminJobs() {
            <Button variant="ghost" className="flex-1 md:flex-none gap-2 text-slate-400 hover:text-slate-900 dark:text-white" onClick={handleSelectAll}>
               {selectedJobs.length === filteredJobs.length && filteredJobs.length > 0 ? 'Deselect All' : 'Select All'}
            </Button>
-           <Button variant="outline" className="flex-1 md:flex-none">Export CSV</Button>
+           <Button variant="outline" className="flex-1 md:flex-none" onClick={handleExportCSV}>Export CSV</Button>
         </div>
       </div>
 

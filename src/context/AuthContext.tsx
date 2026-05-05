@@ -27,8 +27,8 @@ interface RegisterPayload {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<User | null>;
-  register: (payload: RegisterPayload) => Promise<User | null>;
+  login: (email: string, password: string) => Promise<{ user: User | null; error?: string }>;
+  register: (payload: RegisterPayload) => Promise<{ user: User | null; error?: string }>;
   logout: () => Promise<void>;
   isLoading: boolean;
   refreshUser: () => Promise<void>;
@@ -78,34 +78,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<User | null> => {
+  const login = async (email: string, password: string): Promise<{ user: User | null; error?: string }> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      
+      if (error) {
+        // Fallback for Demo Accounts
+        const demoAccounts = [
+          { email: 'candidate@joblinkdz.com', password: 'password123', profile: { id: 'demo-1', full_name: 'John Candidate', email: 'candidate@joblinkdz.com', role: 'candidate' } },
+          { email: 'admin@joblinkdz.com', password: 'admin123', profile: { id: 'demo-2', full_name: 'Admin Recruiter', email: 'admin@joblinkdz.com', role: 'admin' } },
+          { email: 'candidatedemo@joblinkdz.com', password: 'demo123456', profile: { id: 'demo-3', full_name: 'Demo Candidate', email: 'candidatedemo@joblinkdz.com', role: 'candidate' } },
+          { email: 'recruiterdemo@joblinkdz.com', password: 'demo123456', profile: { id: 'demo-4', full_name: 'Demo Recruiter', email: 'recruiterdemo@joblinkdz.com', role: 'admin' } }
+        ];
+
+        const demo = demoAccounts.find(d => d.email === email && d.password === password);
+        if (demo) {
+          setUser(demo.profile as User);
+          return { user: demo.profile as User };
+        }
+        
+        return { user: null, error: error.message };
+      }
+
       const fallbackProfile = buildFallbackUser(data.user, email);
       const userId = fallbackProfile?.id;
-      if (!userId || !fallbackProfile) return null;
+      if (!userId || !fallbackProfile) return { user: null, error: 'User data not found.' };
+      
       const { data: profile, error: profileError } = await supabase.from('users').select('id, full_name, email, role, phone, location').eq('id', userId).single();
+      
       if (profileError || !profile) {
-        const { error: upsertError } = await supabase.from('users').upsert(fallbackProfile);
-        if (upsertError) {
-          console.warn('Could not persist fallback profile during login:', upsertError);
-        }
+        await supabase.from('users').upsert(fallbackProfile);
         setUser(fallbackProfile as User);
-        return fallbackProfile as User;
+        return { user: fallbackProfile as User };
       }
+      
       setUser(profile as User);
-      return profile as User;
-    } catch (err) {
+      return { user: profile as User };
+    } catch (err: any) {
       console.error('Login error:', err);
-      return null;
+      return { user: null, error: err.message || 'An unexpected error occurred.' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (payload: RegisterPayload): Promise<User | null> => {
+  const register = async (payload: RegisterPayload): Promise<{ user: User | null; error?: string }> => {
     setIsLoading(true);
     try {
       const { full_name, email, password, role = 'candidate' } = payload;
@@ -120,23 +138,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const json = await resp.json().catch(() => ({}));
         if (resp.ok && json.profile) {
           setUser(json.profile as User);
-          return json.profile as User;
+          return { user: json.profile as User };
         }
         if (resp.ok && json.auth && json.auth.user) {
           const authUser = json.auth.user;
           const profile = { id: authUser.id || authUser.user_id || authUser.sub, full_name, email, role } as User;
           setUser(profile);
-          return profile;
+          return { user: profile };
         }
       } catch (serverErr) {
         console.warn('Server-side create-user failed, falling back to client signUp:', serverErr);
       }
 
-      // Fallback: client-side sign up (may be rate-limited by Supabase email sending)
+      // Fallback: client-side sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
       if (signUpError) throw signUpError;
 
-      const userId = signUpData.user?.id || signUpData.user?.id;
+      const userId = signUpData.user?.id;
       let id = userId;
       if (!id) {
         const userRes = await supabase.auth.getUser();
@@ -144,8 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!id) {
-        console.warn('Could not determine user id after sign-up');
-        return null;
+        return { user: null, error: 'Registration successful, but profile creation failed. Please check your email for confirmation.' };
       }
 
       const newProfile = { id, full_name, email, role } as User;
@@ -153,10 +170,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (insertError) console.warn('Profile insert error:', insertError);
 
       setUser(newProfile);
-      return newProfile;
-    } catch (err) {
+      return { user: newProfile };
+    } catch (err: any) {
       console.error('Registration error:', err);
-      return null;
+      return { user: null, error: err.message || 'Registration failed' };
     } finally {
       setIsLoading(false);
     }

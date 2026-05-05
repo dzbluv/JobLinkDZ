@@ -133,10 +133,12 @@ export default function Settings() {
     }
   };
 
+  const isRecruiter = user?.role === 'recruiter';
+  
   const tabs = [
-    { id: 'profile', label: t('Profile'), icon: UserIcon },
+    { id: 'profile', label: isRecruiter ? t('Company Profile') : t('Profile'), icon: UserIcon },
     { id: 'notifications', label: t('Notifications'), icon: Bell },
-    { id: 'alerts', label: t('Job Alerts'), icon: Search },
+    { id: 'alerts', label: isRecruiter ? t('Candidate Alerts') : t('Job Alerts'), icon: Search },
     { id: 'security', label: t('Security'), icon: Lock },
     { id: 'appearance', label: t('Appearance'), icon: Palette },
   ];
@@ -200,9 +202,9 @@ export default function Settings() {
 
                   <div className="space-y-6">
                     {[
-                      { id: 'jobs', label: 'New job recommendations', desc: 'Get updates when new jobs matching your profile are posted.' },
-                      { id: 'status', label: 'Application status updates', desc: 'Be notified when an employer updates the status of your application.' },
-                      { id: 'tips', label: 'Recruitment tips & news', desc: 'Receive monthly newsletter with career advice.' },
+                      { id: 'jobs', label: isRecruiter ? 'New candidate recommendations' : 'New job recommendations', desc: isRecruiter ? 'Get updates when new candidates matching your job posts are found.' : 'Get updates when new jobs matching your profile are posted.' },
+                      { id: 'status', label: isRecruiter ? 'New job applications' : 'Application status updates', desc: isRecruiter ? 'Be notified when a candidate applies to your job listings.' : 'Be notified when an employer updates the status of your application.' },
+                      { id: 'tips', label: 'Recruitment tips & news', desc: 'Receive monthly newsletter with career advice and hiring trends.' },
                       { id: 'security', label: 'Security alerts', desc: 'Notifications about your account security and login attempts.' }
                     ].map((item) => (
                       <div key={item.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
@@ -222,8 +224,8 @@ export default function Settings() {
               {activeTab === 'alerts' && (
                 <div className="space-y-8">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Job Alerts</h3>
-                    <p className="text-xs text-slate-500">Stay notified when new jobs match your interests.</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{isRecruiter ? 'Candidate Alerts' : 'Job Alerts'}</h3>
+                    <p className="text-xs text-slate-500">{isRecruiter ? 'Stay notified when new candidates match your hiring needs.' : 'Stay notified when new jobs match your interests.'}</p>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
@@ -323,8 +325,8 @@ export default function Settings() {
                           <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Public Profile</p>
                           <p className="text-[10px] text-slate-500">
                             {isPublic 
-                              ? ' recruiters can find your profile in search results.' 
-                              : 'Your profile is hidden from search results and only visible to you.'}
+                              ? (isRecruiter ? 'Other companies and candidates can find your company profile.' : 'Recruiters can find your profile in search results.') 
+                              : (isRecruiter ? 'Your company profile is hidden from search results.' : 'Your profile is hidden from search results and only visible to you.')}
                           </p>
                        </div>
                        <div 

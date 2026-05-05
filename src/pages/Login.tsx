@@ -42,11 +42,11 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    const loggedInUser = await login(email, password);
-    if (loggedInUser) {
-      navigate(loggedInUser.role === 'admin' ? '/admin-dashboard' : '/dashboard');
+    const { user, error: loginError } = await login(email, password);
+    if (user) {
+      navigate(user.role === 'admin' ? '/admin-dashboard' : '/dashboard');
     } else {
-      setError('Invalid email or password');
+      setError(loginError || 'Invalid email or password');
     }
     setIsLoading(false);
   };

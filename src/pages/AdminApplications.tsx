@@ -259,6 +259,35 @@ export default function AdminApplications() {
     }
   };
 
+  const handleExportCSV = () => {
+    const appsToExport = filteredAndSortedApps;
+    if (appsToExport.length === 0) return;
+
+    const headers = ['Candidate Name', 'Job Title', 'Company', 'Status', 'Applied Date'];
+    const rows = appsToExport.map(app => [
+      app.candidate_name,
+      app.job_title,
+      app.company_name,
+      app.status,
+      new Date(app.created_at).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `applications_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-8 py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
@@ -267,7 +296,7 @@ export default function AdminApplications() {
           <p className="text-slate-500">Review candidate submissions and manage their progress.</p>
         </div>
         <div className="flex gap-4">
-           <Button variant="outline" className="gap-2"> <Download className="w-4 h-4" /> Export All</Button>
+           <Button variant="outline" className="gap-2" onClick={handleExportCSV}> <Download className="w-4 h-4" /> Export All</Button>
         </div>
       </div>
 

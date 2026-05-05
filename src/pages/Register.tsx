@@ -26,11 +26,11 @@ export default function Register() {
       return;
     }
     setIsLoading(true);
-    const newUser = await register({ full_name: fullName, email, password, role });
+    const { user: newUser, error: registerError } = await register({ full_name: fullName, email, password, role });
     if (newUser) {
       navigate(newUser.role === 'admin' ? '/admin-dashboard' : '/dashboard');
     } else {
-      setError('Registration failed');
+      setError(registerError || 'Registration failed');
     }
     setIsLoading(false);
   };
