@@ -82,8 +82,8 @@ export default function JobDetails() {
           <GlassCard className="p-8 space-y-8" hover={false}>
             <div>
               <h2 className="text-2xl font-bold mb-4">Description</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
-                {job.description}
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg whitespace-pre-wrap">
+                {job.description || 'No description provided.'}
               </p>
             </div>
 
