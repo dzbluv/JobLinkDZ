@@ -30,6 +30,7 @@ export default function Settings() {
     location: 'Algiers',
     description: ''
   });
+  const [currentPassword, setCurrentPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);

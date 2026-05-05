@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 
-export function GlassCard({ children, className, hover = true }: { children: React.ReactNode, className?: string, hover?: boolean }) {
+export function GlassCard({ children, className, hover = true, onClick }: { children: React.ReactNode, className?: string, hover?: boolean, onClick?: (e: React.MouseEvent) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -10,6 +10,7 @@ export function GlassCard({ children, className, hover = true }: { children: Rea
       whileHover={hover ? { y: -2 } : {}}
       transition={{ duration: 0.18 }}
       className={cn('glass-card p-6 border border-slate-200 dark:border-white/10 will-change-transform', className)}
+      onClick={onClick}
     >
       {children}
     </motion.div>

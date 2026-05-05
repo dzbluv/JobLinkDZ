@@ -17,6 +17,7 @@ import Jobs from './pages/Jobs';
 import JobDetails from './pages/JobDetails';
 import Apply from './pages/Apply';
 import CandidateDashboard from './pages/CandidateDashboard';
+import ApplicationDetails from './pages/ApplicationDetails';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import CompanyProfile from './pages/CompanyProfile';
@@ -72,6 +73,14 @@ function AnimatedRoutes() {
             element={
               <ProtectedRoute allowedRole="candidate">
                 <CandidateDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/applications/:id" 
+            element={
+              <ProtectedRoute allowedRole="candidate">
+                <ApplicationDetails />
               </ProtectedRoute>
             } 
           />

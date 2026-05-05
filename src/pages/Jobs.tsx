@@ -6,11 +6,11 @@ import type { Company } from '../data/mockCompanies';
 import { JobCard } from '../components/dashboard/Cards';
 import { Input, Badge, GlassCard } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
-import { useJobAlerts } from '../context/JobAlertContext';
+
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Jobs() {
-  const { addAlert } = useJobAlerts();
+
   const [jobs, setJobs] = useState<JobOffer[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -243,23 +243,7 @@ export default function Jobs() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6 bg-indigo-500/5 border-indigo-500/20" hover={false}>
-            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Job Alert</p>
-            <p className="text-xs text-slate-500 leading-relaxed mb-4">
-              Not finding the right fit? Create an alert for this search to be notified immediately when a match appears.
-            </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full text-[10px] h-8"
-              onClick={() => {
-                addAlert({ keyword: search, location: '', jobType: filterType || '' });
-                alert('Alert created! You will be notified of new matches.');
-              }}
-            >
-              <Bell className="w-3 h-3 mr-1" /> Create Alert
-            </Button>
-          </GlassCard>
+
         </aside>
 
         {/* Main Content */}

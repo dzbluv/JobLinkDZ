@@ -287,6 +287,72 @@ export const storageAPI = {
   },
 };
 
+// NOTIFICATIONS
+export interface NotificationData {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: string;
+  status: string;
+  meta?: any;
+  created_at: string;
+}
+
+export const notificationsAPI = {
+  getByUserId: async (userId: string): Promise<NotificationData[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as NotificationData[];
+    } catch (e) {
+      console.error("Error fetching notifications:", e);
+      return [];
+    }
+  },
+  create: async (payload: Omit<NotificationData, "id" | "created_at" | "status">): Promise<NotificationData | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .insert({ ...payload, status: 'unread' })
+        .select()
+        .single();
+      if (error) throw error;
+      return data as NotificationData;
+    } catch (e) {
+      console.error("Error creating notification:", e);
+      return null;
+    }
+  },
+  markAsRead: async (id: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ status: 'read' })
+        .eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Error updating notification status:", e);
+    }
+  },
+  markAllAsRead: async (userId: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ status: 'read' })
+        .eq("user_id", userId)
+        .eq("status", "unread");
+      if (error) throw error;
+    } catch (e) {
+      console.error("Error updating all notifications:", e);
+    }
+  }
+};
+
 // Seed utility (only for development/testing)
 export const seedDatabase = async (
   mockJobs: JobOffer[],

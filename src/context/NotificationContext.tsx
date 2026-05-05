@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { notificationsAPI, type NotificationData } from '../services/api';
+import { useAuth } from './AuthContext';
 
+// Keep the frontend format consistent with existing usage
 export interface Notification {
   id: string;
-  userId: string; // Target user
+  userId: string;
   title: string;
   message: string;
   type: 'application' | 'status_change' | 'system';
@@ -11,42 +14,69 @@ export interface Notification {
   meta?: any;
 }
 
+// Mapper from backend data to frontend Notification
+const mapToFrontend = (data: NotificationData): Notification => ({
+  id: data.id,
+  userId: data.user_id,
+  title: data.title,
+  message: data.message,
+  type: data.type as any,
+  status: data.status as any,
+  createdAt: data.created_at,
+  meta: data.meta
+});
+
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'status'>) => void;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.id) {
+      notificationsAPI.getByUserId(user.id).then(data => {
+        setNotifications(data.map(mapToFrontend));
+      });
+    } else {
+      setNotifications([]);
+    }
+  }, [user?.id]);
 
   const unreadCount = notifications.filter(n => n.status === 'unread').length;
 
-  const addNotification = (notif: Omit<Notification, 'id' | 'createdAt' | 'status'>) => {
-    const newNotif: Notification = {
-      ...notif,
-      id: Math.random().toString(36).substr(2, 9),
-      status: 'unread',
-      createdAt: new Date().toISOString(),
-    };
-    
-    setNotifications(prev => [newNotif, ...prev]);
-    
-    // Simulate Email Send
-    console.log(`%c[EMAIL SENDING] To: ${notif.userId} | Subject: ${notif.title}`, "color: #6366f1; font-weight: bold; font-size: 12px;");
-    console.log(`%cContent: ${notif.message}`, "color: #94a3b8; font-style: italic;");
+  const addNotification = async (notif: Omit<Notification, 'id' | 'createdAt' | 'status'>) => {
+    const createdData = await notificationsAPI.create({
+      user_id: notif.userId,
+      title: notif.title,
+      message: notif.message,
+      type: notif.type,
+      meta: notif.meta
+    });
+
+    if (createdData) {
+      setNotifications(prev => [mapToFrontend(createdData), ...prev]);
+    }
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'read' } : n));
+    await notificationsAPI.markAsRead(id);
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    if (!user?.id) return;
+    // Optimistic update
     setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })));
+    await notificationsAPI.markAllAsRead(user.id);
   };
 
   return (
