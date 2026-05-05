@@ -7,6 +7,16 @@
   <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
 </p>
 
+## 👥 Team Members
+
+| # | Full Name | Email | Group |
+|---|-----------|-------|-------|
+| 1 | [Full Name] | [email@example.com] | [Group] |
+| 2 | [Full Name] | [email@example.com] | [Group] |
+| 3 | [Full Name] | [email@example.com] | [Group] |
+
+---
+
 <h1 align="center">🇩🇿 JobLinkDZ</h1>
 
 <p align="center">
@@ -25,14 +35,22 @@
 
 ---
 
+## 🎬 Demo
+
+> **Watch the full platform walkthrough:**
+>
+> 📹 [**JobLinkDZ — Video Demo**](https://drive.google.com/file/d/1AEwVRi-AeRiExstLFtY8_IzOGOpZZjHs/view?usp=sharing)
+
+---
+
 ## 📸 Overview
 
 JobLinkDZ is a recruitment platform tailored for the Algerian job market. It provides two distinct experiences:
 
-- **Candidates** can browse job listings, apply with resumes and cover letters, track application statuses, save favorite jobs, and manage their professional profile.
+- **Candidates** can browse job listings, apply with resumes and cover letters, track application statuses, view detailed application results, save favorite jobs, and manage their professional profile.
 - **Recruiters (Admin)** can post job vacancies, manage their company profile, review incoming applications with detailed candidate information, and control application pipelines through a dedicated admin dashboard.
 
-The platform features a premium glassmorphic UI with dark/light theme support, smooth page transitions, and full internationalization (English, French, Arabic).
+The platform features a premium glassmorphic UI with dark/light theme support, smooth page transitions, and full internationalization (English, French, Arabic with RTL support).
 
 ---
 
@@ -41,11 +59,13 @@ The platform features a premium glassmorphic UI with dark/light theme support, s
 ### 🔍 For Candidates
 - **Job Discovery** — Browse, search, and filter jobs by type, salary range, company size, industry, and required skills
 - **Job Application** — Apply to positions with resume upload (Supabase Storage) and cover letter
-- **Application Tracking** — Monitor the status of all submitted applications (Pending → Reviewed → Accepted/Rejected)
+- **Application Tracking** — Monitor the status of all submitted applications (Pending → Reviewing → Accepted / Rejected)
+- **Application Details** — View detailed results and status updates for each submitted application
 - **Favorites** — Save interesting job listings for later review
 - **Profile Management** — Build a professional profile with bio, skills, social links (GitHub, LinkedIn, Portfolio)
 - **Job Alerts** — Create custom alerts based on search criteria to be notified of new matches
 - **Company Profiles** — View detailed company information, follow companies, and explore their open positions
+- **Notifications** — Receive persistent notifications about application updates and platform activity
 
 ### 🏢 For Recruiters
 - **Admin Dashboard** — Overview of total jobs posted, applications received, and pipeline analytics
@@ -55,13 +75,13 @@ The platform features a premium glassmorphic UI with dark/light theme support, s
 
 ### 🌐 Platform-Wide
 - **Authentication** — Secure email/password authentication via Supabase Auth with role-based access control
+- **Password Recovery** — Forgot password flow with email reset link via Supabase
 - **Dark / Light Theme** — System-aware theming with manual toggle, persistent across sessions
-- **Internationalization (i18n)** — Full support for English, French, and Arabic via `react-i18next`
+- **Internationalization (i18n)** — Full support for English, French, and Arabic (with automatic RTL layout) via `react-i18next`
 - **Responsive Design** — Mobile-first layouts that adapt from phone to desktop
 - **Animated Page Transitions** — Smooth route transitions powered by Motion (Framer Motion)
 - **Glassmorphic Design System** — Custom glass cards, frosted backgrounds, gradient accents, and micro-animations
 - **Protected Routes** — Role-based route guards (candidate-only, admin-only) with access denied handling
-- **Password Recovery** — Forgot password flow with email reset via Supabase
 
 ---
 
@@ -128,9 +148,9 @@ JobLinkDZ/
 │   │       └── Shared.tsx      # GlassCard, Input, Badge
 │   ├── context/                # React Context providers
 │   │   ├── AuthContext.tsx     # Authentication state & methods
-│   │   ├── JobAlertContext.tsx # Job alert preferences
-│   │   ├── LanguageContext.tsx # i18n language switching
-│   │   ├── NotificationContext.tsx
+│   │   ├── JobAlertContext.tsx  # Job alert preferences
+│   │   ├── LanguageContext.tsx  # i18n language switching + RTL
+│   │   ├── NotificationContext.tsx  # Backend-driven notifications
 │   │   ├── ThemeContext.tsx    # Dark/Light mode
 │   │   └── UserPreferencesContext.tsx  # Favorites, follows
 │   ├── data/                   # Type definitions & mock data
@@ -139,6 +159,10 @@ JobLinkDZ/
 │   ├── lib/
 │   │   ├── supabase.ts         # Supabase client initialization
 │   │   └── utils.ts            # cn() class merge utility
+│   ├── locales/                # Internationalization files
+│   │   ├── en.json             # English translations
+│   │   ├── fr.json             # French translations
+│   │   └── ar.json             # Arabic translations
 │   ├── pages/                  # Route-level page components
 │   │   ├── Landing.tsx         # Marketing homepage
 │   │   ├── Login.tsx           # Auth login + demo accounts
@@ -146,6 +170,7 @@ JobLinkDZ/
 │   │   ├── Jobs.tsx            # Job listing with filters
 │   │   ├── JobDetails.tsx      # Individual job view
 │   │   ├── Apply.tsx           # Application form
+│   │   ├── ApplicationDetails.tsx  # Application status & results
 │   │   ├── CandidateDashboard.tsx  # Candidate home
 │   │   ├── Profile.tsx         # User profile editor
 │   │   ├── Settings.tsx        # Account settings
@@ -154,6 +179,8 @@ JobLinkDZ/
 │   │   ├── AdminDashboard.tsx  # Recruiter analytics
 │   │   ├── AdminJobs.tsx       # Job CRUD management
 │   │   ├── AdminApplications.tsx  # Application review
+│   │   ├── AccessDenied.tsx    # Role-based access denied
+│   │   ├── NotFound.tsx        # 404 page
 │   │   ├── Privacy.tsx         # Privacy policy
 │   │   ├── Support.tsx         # Help & support
 │   │   └── UpdatePassword.tsx  # Password reset handler
@@ -163,13 +190,19 @@ JobLinkDZ/
 │   ├── App.tsx                 # Root component & routing
 │   ├── main.tsx                # Entry point
 │   └── index.css               # Global styles & design tokens
-├── db/                         # Database utilities
-│   └── add_profile_columns.sql
 ├── supabase/
 │   └── migrations/
 │       ├── 00_init.sql         # Core schema (users, jobs, applications, companies)
-│       └── 01_profile_fields.sql
+│       ├── 01_profile_fields.sql   # Profile extension columns
+│       ├── 02_notifications.sql    # Notifications table & RLS
+│       └── 03_fix_applications_rls.sql  # Application access policies
+├── tests/                      # Test suite
+│   ├── authProfile.test.js     # Auth profile unit tests
+│   └── e2e/                    # End-to-end Playwright tests
+├── docs/                       # Specifications & implementation plans
 ├── .env.example                # Environment variable template
+├── .gitignore
+├── ARCHITECTURE.md             # Architecture overview
 ├── index.html                  # Vite HTML entry
 ├── package.json
 ├── tsconfig.json
@@ -206,25 +239,28 @@ cd server && npm install && cd ..
 
 ### 3. Configure environment variables
 
-Create a `.env` file in the project root (and optionally in `server/`):
+Create a `.env` file in the project root:
 
 ```env
 # Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# Server
+# Server (optional, for Express backend)
 PORT=4000
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-> You can copy `.env.example` as a starting template.
+> Copy `.env.example` as a starting template. **Never commit `.env` files to version control.**
 
 ### 4. Set up the database
 
-Run the SQL migrations in your Supabase SQL editor in order:
+Run the SQL migrations in your Supabase SQL Editor in order:
 
 1. `supabase/migrations/00_init.sql` — Creates `users`, `jobs`, `applications`, and `companies` tables with RLS policies
 2. `supabase/migrations/01_profile_fields.sql` — Adds profile extension columns (bio, skills, social links)
+3. `supabase/migrations/02_notifications.sql` — Creates the `notifications` table with user-scoped RLS
+4. `supabase/migrations/03_fix_applications_rls.sql` — Adds granular application access policies for recruiters
 
 ### 5. Run the development server
 
@@ -244,51 +280,16 @@ The Vite dev server proxies `/api/*` requests to the Express backend automatical
 
 The application uses **Supabase PostgreSQL** with Row-Level Security (RLS) enabled on all tables.
 
-```
-┌──────────────────┐       ┌──────────────────┐
-│      users       │       │    companies     │
-├──────────────────┤       ├──────────────────┤
-│ id (PK, FK auth) │       │ id (PK, uuid)    │
-│ full_name        │       │ owner_id (FK)    │
-│ email            │       │ name             │
-│ role             │       │ industry         │
-│ phone            │       │ location         │
-│ location         │       │ description      │
-│ bio              │       │ size             │
-│ github_url       │       │ logo             │
-│ portfolio_url    │       │ website          │
-│ linkedin_url     │       │ founded          │
-│ skills (text[])  │       │ created_at       │
-│ created_at       │       └──────────────────┘
-└──────────────────┘
-         │
-         │ user_id
-         ▼
-┌──────────────────┐       ┌──────────────────┐
-│  applications    │       │      jobs        │
-├──────────────────┤       ├──────────────────┤
-│ id (PK, uuid)    │       │ id (PK, uuid)    │
-│ user_id (FK)     │──────▶│ title            │
-│ job_id (FK)      │       │ company          │
-│ status           │       │ company_id (FK)  │
-│ resume_url       │       │ location         │
-│ cover_letter     │       │ job_type         │
-│ applied_at       │       │ salary_range     │
-│ created_at       │       │ description      │
-└──────────────────┘       │ requirements[]   │
-                           │ responsibilities[]│
-                           │ skills[]         │
-                           │ status           │
-                           │ owner_id         │
-                           │ created_at       │
-                           └──────────────────┘
-```
+<p align="center">
+  <img src="supabase-schema-rhiicftiqnbrywjpfwpc.svg" alt="Database Schema Diagram" width="100%" />
+</p>
 
 ### RLS Policies
 - **users** — Users can only read and update their own profile
-- **jobs** — Publicly readable by everyone
-- **applications** — Users can only view their own applications; admins have extended access
+- **jobs** — Publicly readable by everyone; only the owner can create, update, or delete
+- **applications** — Candidates can view and create their own applications; recruiters can view applications for their posted jobs
 - **companies** — Publicly readable by everyone
+- **notifications** — Users can only view, create, and manage their own notifications
 
 ---
 
@@ -302,7 +303,7 @@ The platform supports three languages out of the box:
 | 🇫🇷 French | `fr` | LTR |
 | 🇩🇿 Arabic | `ar` | RTL |
 
-Language preference is persisted in `localStorage` and can be changed from the **Settings** page.
+Language preference is persisted in `localStorage` and can be changed from the **Settings** page. When Arabic is selected, the entire layout automatically switches to right-to-left (RTL) direction.
 
 ---
 
@@ -344,7 +345,7 @@ npm start
 
 The Supabase project handles:
 - **PostgreSQL** database with RLS
-- **Auth** for email/password authentication  
+- **Auth** for email/password authentication
 - **Storage** for resume file uploads
 
 ---
@@ -361,7 +362,7 @@ The Supabase project handles:
 
 ### Supabase Client API
 
-All primary data operations (jobs, companies, applications) are performed directly through the Supabase client SDK — see `src/services/api.ts` for the full CRUD layer.
+All primary data operations (jobs, companies, applications, notifications) are performed directly through the Supabase client SDK — see `src/services/api.ts` for the full CRUD layer.
 
 ---
 

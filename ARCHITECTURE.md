@@ -1,40 +1,35 @@
-Project architecture (fullstack)
+Project Architecture (Fullstack)
 
-Root files:
-- `package.json`, `README.md`, `.env.example`
+Root Files:
+- `package.json`, `README.md`, `.env.example`, `.gitignore`
 
-Frontend:
+Frontend (`src/`):
 - `public/` — static assets
-- `src/` — frontend source
-  - `src/pages/` — route pages
-  - `src/components/` — reusable UI components
-  - `src/layouts/` — layout components
-  - `src/styles/` — global styles and tokens
-  - `src/assets/` — images, icons, fonts
-  - `src/lib/` — low-level clients (e.g., `supabaseClient.ts`)
-  - `src/services/` — business logic and data access
-  - `src/hooks/` — custom hooks
-  - `src/store/` — global state
-  - `src/utils/` — helpers
-  - `src/types/` — TypeScript types
-  - `src/api/` — frontend API adapters / serverless functions
+- `src/` — React application source
+  - `src/pages/` — Route-level page components
+  - `src/components/` — Reusable UI components (admin, dashboard, layout, ui)
+  - `src/context/` — React Context providers (Auth, Theme, i18n)
+  - `src/lib/` — Low-level client initializations (Supabase)
+  - `src/services/` — API layer and business logic
+  - `src/locales/` — Internationalization JSON files (EN, FR, AR)
+  - `src/data/` — Mock data and TypeScript interfaces
+  - `src/index.css` — Global styles, Tailwind directives, and design tokens
 
-Backend (server):
-- `server/`
-  - `server/package.json` — backend npm manifest
-  - `server/src/` — backend source
-    - `server/src/index.js` — server entry (Express)
-    - `server/src/routes/` — API route handlers
-  - `server/migrations/` — DB migrations
+Backend (`server/`):
+- `server/` — Express.js API server
+  - `server/src/index.js` — Server entry point
+  - `server/src/routes/` — API route handlers (admin, users)
+  - `server/package.json` — Backend dependencies
 
-Database:
-- `db/` — schema, seeds, and DB docs
+Database (`supabase/`):
+- `supabase/migrations/` — SQL migration files (schema, profile fields, RLS fixes)
 
-Infra & docs:
-- `infra/` — IaC (optional)
-- `docs/` — architecture and API specs
+Infra & Docs:
+- `docs/` — Specifications and implementation plans
+- `tests/` — End-to-end testing suite (Playwright)
+- `vercel.json` — Frontend deployment configuration
 
 Notes:
 - Keep low-level SDKs in `src/lib/` and business logic in `src/services/`.
 - Use `.env.example` for required env vars; do NOT commit secrets.
-- For monorepo-like workflows, the frontend and backend can have separate `package.json` files and independent scripts.
+- The project uses `concurrently` to run both frontend (Vite) and backend (Express) during development.
