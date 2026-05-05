@@ -59,7 +59,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data) {
           setUser(data as User);
         } else {
-          setUser(buildFallbackUser(sessionUser) as User | null);
+          // No profile row found — auto-create it from session metadata
+          const fallback = buildFallbackUser(sessionUser) as User | null;
+          if (fallback) {
+            const { data: upserted, error: upsertErr } = await supabase
+              .from('users')
+              .upsert(fallback)
+              .select(USER_COLUMNS)
+              .single();
+            if (upserted && !upsertErr) {
+              setUser(upserted as User);
+            } else {
+              console.warn('Auto-profile upsert failed:', upsertErr?.message);
+              setUser(fallback);
+            }
+          } else {
+            setUser(null);
+          }
         }
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -152,8 +168,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('Server-side create-user failed, falling back to client signUp:', serverErr);
       }
 
-      // Fallback: client-side sign up
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+      // Fallback: client-side sign up — include metadata so buildFallbackUser
+      // can extract full_name/role even before the users row is created.
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name, role },
+        },
+      });
       if (signUpError) throw signUpError;
 
       const userId = signUpData.user?.id;
