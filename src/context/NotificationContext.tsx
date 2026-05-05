@@ -61,7 +61,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       meta: notif.meta
     });
 
-    if (createdData) {
+    if (createdData && createdData.user_id === user?.id) {
       setNotifications(prev => [mapToFrontend(createdData), ...prev]);
     }
   };
