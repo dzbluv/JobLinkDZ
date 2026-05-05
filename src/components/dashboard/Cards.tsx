@@ -4,7 +4,7 @@ import type { JobOffer } from '../../data/mockJobs';
 import { GlassCard, Badge } from '../ui/Shared';
 import { Button } from '../ui/Button';
 import { Link } from 'react-router-dom';
-import type { Application } from '../../data/mockApplications';
+import { type Application, getAppCandidateName, getAppJobTitle, getAppCompanyName } from '../../data/mockApplications';
 
 export function JobCard({ job }: { job: JobOffer }) {
   return (
@@ -83,9 +83,9 @@ export function ApplicationCard({ application }: { application: Application }) {
     <GlassCard className="flex flex-col h-full border-t-4 border-t-indigo-500 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all group" hover={true}>
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white italic group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight line-clamp-1">{application.job_title}</h3>
-          <Link to={`/companies/${application.company_id || 'c1'}`} className="text-xs font-black text-slate-500 uppercase tracking-widest mt-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block">
-            {application.company_name}
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white italic group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight line-clamp-1">{getAppJobTitle(application)}</h3>
+          <Link to={`/companies/${application.jobs?.company_id || 'c1'}`} className="text-xs font-black text-slate-500 uppercase tracking-widest mt-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block">
+            {getAppCompanyName(application)}
           </Link>
         </div>
         <Badge variant={config.variant as any} className="capitalize flex items-center gap-1.5 px-3 py-1 group-hover:scale-105 transition-transform">
@@ -100,9 +100,9 @@ export function ApplicationCard({ application }: { application: Application }) {
         </div>
         <div className="flex-1">
           <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">Applicant</p>
-          <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{application.candidate_name}</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{getAppCandidateName(application)}</p>
         </div>
-        <Link to={`/candidate/${application.candidate_id}`}>
+        <Link to={`/candidate/${application.user_id}`}>
           <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-white hover:bg-indigo-600 transition-all">
             <ArrowRight className="w-4 h-4" />
           </div>
@@ -116,7 +116,7 @@ export function ApplicationCard({ application }: { application: Application }) {
             Applied {new Date(application.created_at).toLocaleDateString()}
           </p>
         </div>
-        <Link to={`/jobs/${application.job_offer_id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors italic group/specs">
+        <Link to={`/jobs/${application.job_id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors italic group/specs">
           Job Specs
           <ChevronRight className="w-3.5 h-3.5 group-hover/specs:translate-x-1 transition-transform" />
         </Link>

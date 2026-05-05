@@ -57,7 +57,7 @@ export default function CandidateDashboard() {
     if (!user || allJobs.length === 0) return [];
 
     // 1. Get IDs of jobs user already applied to
-    const appliedJobIds = new Set(applications.map(app => app.job_offer_id));
+    const appliedJobIds = new Set(applications.map(app => app.job_id));
 
     // 2. Get the actual job objects user applied to
     const appliedJobs = allJobs.filter(job => appliedJobIds.has(job.id));

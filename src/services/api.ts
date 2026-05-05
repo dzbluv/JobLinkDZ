@@ -159,7 +159,7 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .select('*, jobs(title), users(full_name)')
+        .select('*, jobs(title, company, company_id), users(full_name)')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as Application[];
@@ -172,7 +172,7 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .select('*, jobs(title), users(full_name)')
+        .select('*, jobs(title, company, company_id), users(full_name)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -182,11 +182,25 @@ export const applicationsAPI = {
       return [];
     }
   },
-  create: async (application: Omit<Application, 'id'>): Promise<string> => {
+  create: async (payload: {
+    user_id: string;
+    job_id: string;
+    status?: string;
+    resume_url?: string;
+    cover_letter?: string;
+    applied_at: string;
+  }): Promise<string> => {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .insert(application)
+        .insert({
+          user_id: payload.user_id,
+          job_id: payload.job_id,
+          status: payload.status || 'pending',
+          resume_url: payload.resume_url,
+          cover_letter: payload.cover_letter,
+          applied_at: payload.applied_at,
+        })
         .select()
         .single();
       if (error) throw error;

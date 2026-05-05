@@ -7,8 +7,20 @@ export interface Application {
   cover_letter?: string;
   applied_at: string;
   created_at: string;
-  jobs?: { title: string };
+  // Joined relations from Supabase .select('*, jobs(...), users(...)')
+  jobs?: { title: string; company?: string; company_id?: string };
   users?: { full_name: string };
+}
+
+// Helper accessors — use these in UI code to safely read joined data
+export function getAppCandidateName(app: Application): string {
+  return app.users?.full_name || 'Unknown Candidate';
+}
+export function getAppJobTitle(app: Application): string {
+  return app.jobs?.title || 'Unknown Job';
+}
+export function getAppCompanyName(app: Application): string {
+  return app.jobs?.company || 'Unknown Company';
 }
 
 export const mockApplications: Application[] = [
@@ -21,7 +33,7 @@ export const mockApplications: Application[] = [
     cover_letter: 'I am highly interested in this senior position as it matches my skills perfectly.',
     applied_at: '2024-03-25T08:30:00Z',
     created_at: '2024-03-25T08:30:00Z',
-    jobs: { title: 'Senior Frontend Developer' },
+    jobs: { title: 'Senior Frontend Developer', company: 'TechCorp' },
     users: { full_name: 'Ahmed Benali' }
   },
   {
@@ -33,7 +45,7 @@ export const mockApplications: Application[] = [
     cover_letter: 'I love designing beautiful UIs and I believe I would be a great fit for your team.',
     applied_at: '2024-03-26T15:00:00Z',
     created_at: '2024-03-26T15:00:00Z',
-    jobs: { title: 'UX/UI Designer' },
+    jobs: { title: 'UX/UI Designer', company: 'DesignLab' },
     users: { full_name: 'Ahmed Benali' }
   }
 ];
