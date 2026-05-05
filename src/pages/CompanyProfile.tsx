@@ -4,6 +4,7 @@ import { Globe, MapPin, Users, Calendar, Briefcase, ChevronRight, ExternalLink, 
 import type { Company } from '../data/mockCompanies';
 import type { JobOffer } from '../data/mockJobs';
 import { companiesAPI, jobsAPI } from '../services/api';
+import { supabase } from '../lib/supabase';
 import { GlassCard, Badge } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
@@ -11,12 +12,16 @@ import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import NotFound from './NotFound';
 
+import { useUserPreferences } from '../context/UserPreferencesContext';
+
 export default function CompanyProfile() {
   const { id } = useParams();
-  const [isFollowing, setIsFollowing] = useState(false);
+  const { isFollowing: checkFollowing, toggleFollowCompany } = useUserPreferences();
+  const isFollowing = id ? checkFollowing(id) : false;
   const [isHovered, setIsHovered] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
   const [companyJobs, setCompanyJobs] = useState<JobOffer[]>([]);
+  const [followerCount, setFollowerCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -24,12 +29,17 @@ export default function CompanyProfile() {
       if (!id) return;
       setIsLoading(true);
       try {
-        const [compData, allJobs] = await Promise.all([
+        const [compData, allJobs, prefCount] = await Promise.all([
            companiesAPI.getById(id),
-           jobsAPI.getAll()
+           jobsAPI.getAll(),
+           supabase
+            .from('user_preferences')
+            .select('*', { count: 'exact', head: true })
+            .contains('followed_companies', [id])
         ]);
         setCompany(compData);
         setCompanyJobs(allJobs.filter(j => j.company_id === id));
+        setFollowerCount(prefCount.count || 0);
       } catch (err) {
         console.error(err);
       } finally {
@@ -39,8 +49,12 @@ export default function CompanyProfile() {
     fetchData();
   }, [id]);
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
+  const handleFollow = async () => {
+    if (id) {
+      await toggleFollowCompany(id);
+      // Optimistically update count
+      setFollowerCount(prev => isFollowing ? Math.max(0, prev - 1) : prev + 1);
+    }
   };
 
   if (isLoading) {
@@ -79,9 +93,14 @@ export default function CompanyProfile() {
               <div className="w-24 h-24 bg-indigo-500/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
                 <span className="text-3xl font-bold text-indigo-400">{company.logo}</span>
               </div>
-              <h1 className="text-2xl font-bold text-slate-950 dark:text-white mb-2">{company.name}</h1>
-              <p className="text-sm text-indigo-600 dark:text-indigo-400 font-bold italic mb-6">{company.industry}</p>
+              <h1 className="text-2xl font-bold text-slate-950 dark:text-white mb-1">{company.name}</h1>
+              <p className="text-sm text-indigo-600 dark:text-indigo-400 font-bold italic mb-2">{company.industry}</p>
               
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <Badge variant="info" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  {followerCount} Followers
+                </Badge>
+              </div>
               <div className="flex justify-center gap-4 mb-6">
                 <a href={company.website} target="_blank" rel="noreferrer">
                   <Button variant="outline" size="icon" className="rounded-xl">

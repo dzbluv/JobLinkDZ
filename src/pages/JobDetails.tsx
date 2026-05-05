@@ -2,21 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Building2, MapPin, Briefcase, Coins, Calendar, Clock, 
-  ChevronLeft, Share2, Bookmark, CheckCircle2, AlertCircle, Loader2 
+  ChevronLeft, Share2, Bookmark, CheckCircle2, AlertCircle, Loader2, Heart
 } from 'lucide-react';
 import type { JobOffer } from '../data/mockJobs';
 import { jobsAPI } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { GlassCard, Badge } from '../components/ui/Shared';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import NotFound from './NotFound';
+import { useUserPreferences } from '../context/UserPreferencesContext';
 
 export default function JobDetails() {
   const { id } = useParams();
   const [job, setJob] = useState<JobOffer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { isFavorite, toggleFavoriteJob } = useUserPreferences();
+  const [isCopied, setIsCopied] = useState(false);
+
+  const favorite = id ? isFavorite(id) : false;
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
 
   useEffect(() => {
     async function fetchJob() {
@@ -73,9 +86,37 @@ export default function JobDetails() {
                  <span>Posted on {new Date(job.created_at).toLocaleDateString()}</span>
               </div>
             </div>
-            <div className="flex gap-4">
-               <Button variant="outline" size="icon" className="rounded-full"><Share2 className="w-5 h-5" /></Button>
-               <Button variant="outline" size="icon" className="rounded-full"><Bookmark className="w-5 h-5" /></Button>
+            <div className="flex gap-4 relative">
+               <div className="relative">
+                 <Button 
+                   variant="outline" 
+                   size="icon" 
+                   className="rounded-full hover:text-indigo-400 transition-colors"
+                   onClick={handleShare}
+                 >
+                   <Share2 className="w-5 h-5" />
+                 </Button>
+                 <AnimatePresence>
+                   {isCopied && (
+                     <motion.div 
+                       initial={{ opacity: 0, y: 10 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       exit={{ opacity: 0 }}
+                       className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-bold rounded-lg whitespace-nowrap"
+                     >
+                       Link Copied!
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+               </div>
+               <Button 
+                 variant={favorite ? "primary" : "outline"} 
+                 size="icon" 
+                 className={cn("rounded-full transition-all", favorite ? "bg-rose-500/10 text-rose-500 border-rose-500/30" : "hover:text-rose-500")}
+                 onClick={() => id && toggleFavoriteJob(id)}
+               >
+                 <Heart className={cn("w-5 h-5", favorite && "fill-current")} />
+               </Button>
             </div>
           </header>
 

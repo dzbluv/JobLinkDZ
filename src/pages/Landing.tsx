@@ -8,9 +8,11 @@ import { motion } from 'motion/react';
 import type { JobOffer } from '../data/mockJobs';
 import { jobsAPI } from '../services/api';
 import { JobCard } from '../components/dashboard/Cards';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Landing() {
   const [featuredJobs, setFeaturedJobs] = useState<JobOffer[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function loadJobs() {
@@ -55,10 +57,10 @@ export default function Landing() {
         >
           <Badge variant="info">Recruitment Reinvented</Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mt-6 mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
-            Find your next opportunity with <span className="font-extrabold italic text-indigo-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-primary dark:to-accent">JobLinkDZ</span>
+            {t('hero.title')}
           </h1>
           <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
-            Discover thousands of jobs, apply with one click using your digital CV, and track your applications in real-time. The future of hiring in Algeria starts here.
+            {t('hero.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <Link to="/jobs">

@@ -3,6 +3,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { JobAlertProvider } from './context/JobAlertContext';
+import { UserPreferencesProvider } from './context/UserPreferencesContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Navbar, Footer } from './components/layout/Navbar';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AnimatePresence, motion } from 'motion/react';
@@ -26,6 +28,7 @@ import NotFound from './pages/NotFound';
 import Privacy from './pages/Privacy';
 import Support from './pages/Support';
 import UpdatePassword from './pages/UpdatePassword';
+import Favorites from './pages/Favorites';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -69,6 +72,14 @@ function AnimatedRoutes() {
             element={
               <ProtectedRoute allowedRole="candidate">
                 <CandidateDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/favorites" 
+            element={
+              <ProtectedRoute allowedRole="candidate">
+                <Favorites />
               </ProtectedRoute>
             } 
           />
@@ -128,21 +139,25 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <NotificationProvider>
-          <JobAlertProvider>
-            <Router>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-grow">
-                <AnimatedRoutes />
-              </main>
-              <Footer />
-            </div>
-          </Router>
-          </JobAlertProvider>
-        </NotificationProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <UserPreferencesProvider>
+            <NotificationProvider>
+              <JobAlertProvider>
+                <Router>
+                <div className="min-h-screen flex flex-col">
+                  <Navbar />
+                  <main className="flex-grow">
+                    <AnimatedRoutes />
+                  </main>
+                  <Footer />
+                </div>
+              </Router>
+              </JobAlertProvider>
+            </NotificationProvider>
+          </UserPreferencesProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

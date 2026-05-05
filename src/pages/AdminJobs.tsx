@@ -43,24 +43,35 @@ export default function AdminJobs() {
         if (!user?.id) return;
         setIsLoading(true);
         try {
-           const company = await companiesAPI.getByOwnerId(user.id);
-           console.log('[AdminJobs] Company lookup for user', user.id, '→', company);
-           if (!company) {
-             console.warn('[AdminJobs] No company found for this recruiter. Job posting will be disabled.');
-             setJobs([]);
-             setApplications([]);
-             return;
-           }
-           setCompanyId(company.id);
-
-           const [fetchedJobs, allApps] = await Promise.all([
-             jobsAPI.getByCompanyId(company.id),
-             applicationsAPI.getAll()
-           ]);
+           let company = await companiesAPI.getByOwnerId(user.id);
            
-           const jobIds = new Set(fetchedJobs.map(j => j.id));
-           setJobs(fetchedJobs);
-           setApplications(allApps.filter(a => jobIds.has(a.job_id)));
+           // Auto-fix: if recruiter has no company, create a default one
+           if (!company && user.role === 'admin') {
+             console.log('[AdminJobs] Creating missing company for recruiter...');
+             const newCompanyId = await companiesAPI.create({
+               owner_id: user.id,
+               name: user.full_name + "'s Company",
+               industry: 'Technology',
+               size: 'Medium',
+               location: 'Algiers',
+               description: 'Automatically created company profile.'
+             });
+             company = await companiesAPI.getById(newCompanyId);
+           }
+
+           if (company) {
+             setCompanyId(company.id);
+             setForm(prev => ({ ...prev, company: company.name }));
+             
+             const [fetchedJobs, allApps] = await Promise.all([
+               jobsAPI.getByCompanyId(company.id),
+               applicationsAPI.getAll()
+             ]);
+             
+             const jobIds = new Set(fetchedJobs.map(j => j.id));
+             setJobs(fetchedJobs);
+             setApplications(allApps.filter(a => jobIds.has(a.job_id)));
+           }
         } catch(e) {
            console.error('[AdminJobs] fetchData error:', e);
         } finally {
@@ -68,16 +79,12 @@ export default function AdminJobs() {
         }
      }
      fetchData();
-  }, [user?.id]);
+  }, [user?.id, user?.role, user?.full_name]);
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id) {
-      alert('You must be logged in to post a job.');
-      return;
-    }
-    if (!companyId) {
-      alert('No company profile found for your account. Please contact support or create a company first.');
+    if (!user?.id || !companyId) {
+      alert('Your company profile is still being set up. Please try again in a moment.');
       return;
     }
     setIsPosting(true);
@@ -97,7 +104,7 @@ export default function AdminJobs() {
         setJobs(prev => prev.map(j => j.id === editingJobId ? { ...j, ...updateData } : j));
         setIsModalOpen(false);
         setEditingJobId(null);
-        setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+        setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
         const newJob: Omit<JobOffer, 'id'> = {
           title: form.title,
@@ -124,14 +131,14 @@ export default function AdminJobs() {
            setJobs([createdJob, ...jobs]);
            checkJobAgainstAlerts(createdJob);
            setIsModalOpen(false);
-           setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
+           setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
         } else {
            alert('Failed to create job. Check the browser console for details.');
         }
       }
     } catch (err) {
-      console.error('[AdminJobs] handlePostJob error:', err);
-      alert('Error creating job posting. See console for details.');
+      console.error('Failed to post job:', err);
+      alert('Failed to post job. Please check your connection.');
     } finally {
       setIsPosting(false);
     }
@@ -219,7 +226,7 @@ export default function AdminJobs() {
           <h1 className="text-3xl font-bold italic text-slate-900 dark:text-white">Manage Job Offers</h1>
           <p className="text-slate-500">Create, edit, and monitor your current job openings.</p>
         </div>
-        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
+        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: companyId ? form.company : '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
           <Plus className="w-5 h-5" /> Post Job Offer
         </Button>
       </div>
@@ -328,7 +335,7 @@ export default function AdminJobs() {
                          }
                       }}><Trash2 className="w-5 h-5" /></Button>
                    </div>
-                </div>
+                 </div>
               </GlassCard>
             </motion.div>
           );
@@ -468,7 +475,7 @@ export default function AdminJobs() {
                        </p>
                     </div>
                  </form>
-             </motion.div>
+              </motion.div>
           </div>
         )}
       </AnimatePresence>

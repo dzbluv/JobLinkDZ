@@ -27,15 +27,19 @@ export default function Jobs() {
     async function fetchData() {
       setIsLoading(true);
       try {
+        console.log('[Jobs] Fetching jobs and companies...');
         const [fetchedJobs, fetchedCompanies] = await Promise.all([
           jobsAPI.getAll(),
           companiesAPI.getAll()
         ]);
                 
+        console.log('[Jobs] Fetched jobs count:', fetchedJobs.length);
+        console.log('[Jobs] Fetched companies count:', fetchedCompanies.length);
+        
         setJobs(fetchedJobs);
         setCompanies(fetchedCompanies);
       } catch (error) {
-        console.error('Error fetching jobs/companies:', error);
+        console.error('[Jobs] Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -389,10 +393,26 @@ export default function Jobs() {
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full py-20 text-center glass-card">
-                 <p className="text-xl font-bold mb-2">No jobs match your criteria</p>
-                 <p className="text-slate-500">Try adjusting your filters or search terms.</p>
-                 <Button variant="ghost" className="mt-4" onClick={() => {setSearch(''); setFilterType(null); setFilterSize(null); setFilterSalary(null); setSelectedSkills([]); setFilterIndustry(null);}}>Clear all filters</Button>
+              <div className="col-span-full py-20 text-center glass-card bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-12">
+                 <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-500">
+                    <Search className="w-10 h-10" />
+                 </div>
+                 <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No jobs found</h2>
+                 <p className="text-slate-500 max-w-md mx-auto mb-8">
+                   {jobs.length === 0 
+                     ? "The job board is currently empty. If you have posted jobs but don't see them here, please ensure your Supabase RLS policies allow 'public' reading of the 'jobs' table." 
+                     : "No jobs match your current filters. Try adjusting your search or clearing the filters."}
+                 </p>
+                 <div className="flex justify-center gap-4">
+                   <Button variant="outline" onClick={() => {setSearch(''); setFilterType(null); setFilterSize(null); setFilterSalary(null); setSelectedSkills([]); setFilterIndustry(null);}}>
+                     Clear all filters
+                   </Button>
+                   {jobs.length === 0 && (
+                     <Button onClick={() => window.location.reload()}>
+                       Refresh Page
+                     </Button>
+                   )}
+                 </div>
               </div>
             )}
           </div>

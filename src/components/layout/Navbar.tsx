@@ -4,15 +4,72 @@ import { Menu, X, LogOut, LayoutDashboard, Briefcase, User as UserIcon, Settings
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
+export function LanguageSelector() {
+  const { language, setLanguage } = useLanguage();
+  const [showOptions, setShowOptions] = useState(false);
+
+  const languages = [
+    { code: 'EN', label: 'English', flag: '🇬🇧' },
+    { code: 'FR', label: 'Français', flag: '🇫🇷' },
+    { code: 'AR', label: 'العربية', flag: '🇩🇿' }
+  ] as const;
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setShowOptions(!showOptions)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-indigo-500/30 transition-all"
+      >
+        <span className="text-xs font-black uppercase tracking-tighter text-slate-600 dark:text-slate-400">{language}</span>
+      </button>
+      
+      <AnimatePresence>
+        {showOptions && (
+          <>
+            <div className="fixed inset-0 z-[60]" onClick={() => setShowOptions(false)} />
+            <motion.div 
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+              className="absolute right-0 mt-2 w-32 glass rounded-2xl z-[70] border border-slate-200 dark:border-white/10 shadow-2xl p-1.5 overflow-hidden bg-white dark:bg-slate-900"
+            >
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    setLanguage(lang.code);
+                    setShowOptions(false);
+                  }}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all",
+                    language === lang.code 
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" 
+                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                  )}
+                >
+                  <span>{lang.label}</span>
+                  <span className="text-[10px] opacity-60">{lang.code}</span>
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function Navbar() {
   const { user, logout } = useAuth();
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const { theme, toggleTheme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -26,16 +83,16 @@ export function Navbar() {
 
   const navLinks = user?.role === 'admin' 
     ? [
-        { label: 'Admin Dashboard', path: '/admin-dashboard', icon: LayoutDashboard },
+        { label: t('nav.dashboard'), path: '/admin-dashboard', icon: LayoutDashboard },
         { label: 'Manage Jobs', path: '/admin-jobs', icon: Briefcase },
         { label: 'Applications', path: '/admin-applications', icon: UserIcon },
       ]
     : [
-        { label: 'Browse Jobs', path: '/jobs', icon: Briefcase },
+        { label: t('nav.browse'), path: '/jobs', icon: Briefcase },
         ...(user ? [
-          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-          { label: 'My Profile', path: '/profile', icon: UserIcon },
-          { label: 'Settings', path: '/settings', icon: Settings },
+          { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutDashboard },
+          { label: t('nav.profile'), path: '/profile', icon: UserIcon },
+          { label: t('nav.settings'), path: '/settings', icon: Settings },
         ] : [])
       ];
 
@@ -91,6 +148,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
+          <LanguageSelector />
           {user ? (
             <div className="flex items-center gap-4">
               {/* Theme Toggle */}
@@ -210,6 +268,7 @@ export function Navbar() {
 
         {/* Mobile menu button */}
         <div className="md:hidden flex items-center gap-3">
+          <LanguageSelector />
           <button 
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400 dark:hover:text-slate-900 dark:text-white"

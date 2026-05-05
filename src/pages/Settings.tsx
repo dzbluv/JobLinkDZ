@@ -20,8 +20,16 @@ export default function Settings() {
   const [newAlert, setNewAlert] = useState({ keyword: '', location: '', jobType: '' });
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const isRecruiter = user?.role === 'admin';
   
-  const [currentPassword, setCurrentPassword] = useState('');
+  const [companyData, setCompanyData] = useState({
+    id: '',
+    name: '',
+    industry: 'Technology',
+    size: 'Medium',
+    location: 'Algiers',
+    description: ''
+  });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -133,7 +141,50 @@ export default function Settings() {
     }
   };
 
-  const isRecruiter = user?.role === 'recruiter';
+  useEffect(() => {
+    const fetchCompany = async () => {
+      if (isRecruiter && user?.id) {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('owner_id', user.id)
+          .single();
+        if (data && !error) {
+          setCompanyData(data);
+        }
+      }
+    };
+    fetchCompany();
+  }, [isRecruiter, user?.id]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      if (isRecruiter && companyData.id) {
+        const { error } = await supabase
+          .from('companies')
+          .update({
+            name: companyData.name,
+            industry: companyData.industry,
+            size: companyData.size,
+            location: companyData.location,
+            description: companyData.description
+          })
+          .eq('id', companyData.id);
+        if (error) throw error;
+      }
+      
+      // Also update user profile visibility if needed
+      // (Simulation for other settings)
+      
+      setTimeout(() => {
+        setIsSaving(false);
+      }, 800);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setIsSaving(false);
+    }
+  };
   
   const tabs = [
     { id: 'profile', label: isRecruiter ? t('Company Profile') : t('Profile'), icon: UserIcon },
@@ -141,11 +192,6 @@ export default function Settings() {
     { id: 'security', label: t('Security'), icon: Lock },
     { id: 'appearance', label: t('Appearance'), icon: Palette },
   ];
-
-  const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => setIsSaving(false), 1500);
-  };
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-20 px-8 transition-colors duration-500">

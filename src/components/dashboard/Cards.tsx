@@ -1,15 +1,53 @@
 import React from 'react';
-import { MapPin, Briefcase, DollarSign, Clock, ChevronRight, User, Calendar, Search, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { MapPin, Briefcase, DollarSign, Clock, ChevronRight, User, Calendar, Search, CheckCircle, XCircle, ArrowRight, Heart, Share2, Link as LinkIcon } from 'lucide-react';
 import type { JobOffer } from '../../data/mockJobs';
 import { GlassCard, Badge } from '../ui/Shared';
 import { Button } from '../ui/Button';
 import { Link } from 'react-router-dom';
 import { type Application, getAppCandidateName, getAppJobTitle, getAppCompanyName } from '../../data/mockApplications';
+import { useUserPreferences } from '../../context/UserPreferencesContext';
+import { useState } from 'react';
 
 export function JobCard({ job }: { job: JobOffer }) {
+  const { isFavorite, toggleFavoriteJob } = useUserPreferences();
+  const [isCopied, setIsCopied] = useState(false);
+  const favorite = isFavorite(job.id);
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/jobs/${job.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
   return (
-    <GlassCard className="flex flex-col h-full border-l-4 border-l-indigo-500 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all group">
-      <div className="flex justify-between items-start mb-4">
+    <GlassCard className="flex flex-col h-full border-l-4 border-l-indigo-500 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all group relative">
+      <div className="absolute top-4 right-4 flex gap-2 z-10">
+         <button 
+           onClick={(e) => { e.preventDefault(); toggleFavoriteJob(job.id); }}
+           className={`p-2 rounded-xl border border-slate-200 dark:border-white/10 transition-all ${favorite ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-rose-500'}`}
+         >
+           <Heart className={`w-4 h-4 ${favorite ? 'fill-current' : ''}`} />
+         </button>
+         <div className="relative">
+           <button 
+             onClick={handleShare}
+             className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-indigo-400 transition-all"
+           >
+             <Share2 className="w-4 h-4" />
+           </button>
+           {isCopied && (
+             <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-bold rounded-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-1">
+               Link Copied!
+             </div>
+           )}
+         </div>
+      </div>
+
+      <div className="flex justify-between items-start mb-4 pr-20">
         <div className="flex gap-4">
           <Link to={`/companies/${job.company_id}`} className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center p-2 flex-shrink-0 overflow-hidden border border-slate-200 dark:border-white/10 group-hover:border-indigo-500/50 transition-all group/logo">
              {job.logo ? (
@@ -33,20 +71,6 @@ export function JobCard({ job }: { job: JobOffer }) {
             </div>
           </div>
         </div>
-        <Badge 
-          variant={job.job_type === 'Full-time' ? 'info' : 'default'}
-          className="group-hover:scale-105 transition-transform"
-          title={`${job.job_type} position - ${
-            job.job_type === 'Full-time' ? 'Standard 40h/week commitment' :
-            job.job_type === 'Part-time' ? 'Flexible hours under 40h/week' :
-            job.job_type === 'Remote' ? 'Work from anywhere' :
-            job.job_type === 'Contract' ? 'Fixed-term project engagement' :
-            job.job_type === 'Internship' ? 'Learning and development role' :
-            job.job_type
-          }`}
-        >
-          {job.job_type}
-        </Badge>
       </div>
 
       <div className="space-y-2 mb-6 flex-grow">

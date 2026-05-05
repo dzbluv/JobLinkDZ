@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Briefcase, Camera, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Briefcase, Camera, Save, Globe, Linkedin, Twitter, Link as LinkIcon, X, Tag, Sparkles, Github, Check, Palette, AlertCircle, Building2, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useUserPreferences } from '../context/UserPreferencesContext';
 import { GlassCard, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Avatar, getColorForName, getInitials, COLOR_PALETTE } from '../components/ui/Avatar';
@@ -262,20 +263,22 @@ export default function Profile() {
               </div>
            </GlassCard>
 
-           <GlassCard className="p-8 bg-indigo-500/5 border-indigo-500/20" hover={false}>
-              <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-2">
-                 <Sparkles className="w-4 h-4 text-indigo-400" /> Core Strengths
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                 {formData.skills.length > 0 ? formData.skills.map(skill => (
-                   <span key={skill} className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-400">
-                     {skill}
-                   </span>
-                 )) : (
-                   <p className="text-[10px] text-slate-500 italic">No skills added yet</p>
-                 )}
-              </div>
-           </GlassCard>
+            <GlassCard className="p-8 bg-indigo-500/5 border-indigo-500/20" hover={false}>
+               <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-400" /> Core Strengths
+               </h4>
+               <div className="flex flex-wrap gap-2">
+                  {formData.skills.length > 0 ? formData.skills.map(skill => (
+                    <span key={skill} className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                      {skill}
+                    </span>
+                  )) : (
+                    <p className="text-[10px] text-slate-500 italic">No skills added yet</p>
+                  )}
+               </div>
+            </GlassCard>
+
+            <FollowedCompanies />
         </div>
 
         <div className="lg:col-span-2">
@@ -473,6 +476,67 @@ export default function Profile() {
         </div>
       </div>
     </div>
+  );
+}
+
+function FollowedCompanies() {
+  const { preferences, toggleFollowCompany } = useUserPreferences();
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      if (preferences.followedCompanies.length === 0) {
+        setCompanies([]);
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('*')
+          .in('id', preferences.followedCompanies);
+        if (data && !error) setCompanies(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCompanies();
+  }, [preferences.followedCompanies]);
+
+  return (
+    <GlassCard className="p-8 bg-white dark:bg-white/5 border-slate-200 dark:border-white/10" hover={false}>
+      <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-2">
+        <Building2 className="w-4 h-4 text-indigo-400" /> Followed Companies
+      </h4>
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-indigo-500" /></div>
+        ) : companies.length > 0 ? companies.map(company => (
+          <div key={company.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 group hover:border-indigo-500/30 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center overflow-hidden p-1.5">
+                {company.logo_url ? <img src={company.logo_url} alt={company.name} className="w-full h-full object-contain" /> : <Building2 className="w-5 h-5 text-slate-400" />}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 italic">{company.name}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{company.industry}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => toggleFollowCompany(company.id)}
+              className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )) : (
+          <p className="text-[10px] text-slate-500 italic text-center py-4">You aren't following any companies yet.</p>
+        )}
+      </div>
+    </GlassCard>
   );
 }
 

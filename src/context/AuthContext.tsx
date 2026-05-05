@@ -169,6 +169,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error: insertError } = await supabase.from('users').insert(newProfile).select();
       if (insertError) console.warn('Profile insert error:', insertError);
 
+      // Auto-create company for recruiters
+      if (role === 'admin') {
+        const { error: companyError } = await supabase.from('companies').insert({
+          owner_id: id,
+          name: `${full_name}'s Company`,
+          industry: 'Technology',
+          size: 'Medium',
+          location: 'Algiers',
+          description: 'Company profile created during registration.'
+        });
+        if (companyError) console.warn('Auto-company creation error:', companyError);
+      }
+
       setUser(newProfile);
       return { user: newProfile };
     } catch (err: any) {
