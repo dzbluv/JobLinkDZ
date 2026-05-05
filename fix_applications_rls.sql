@@ -13,7 +13,7 @@ FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.users 
-    WHERE users.id = auth.uid() AND users.role = 'recruiter'
+    WHERE users.id = auth.uid() AND users.role = 'admin'
   )
 );
 
@@ -24,7 +24,7 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.users 
-    WHERE users.id = auth.uid() AND users.role = 'recruiter'
+    WHERE users.id = auth.uid() AND users.role = 'admin'
   )
 );
 
@@ -33,7 +33,7 @@ DROP POLICY IF EXISTS "Candidates can upload resumes" ON storage.objects;
 CREATE POLICY "Candidates can upload resumes" ON storage.objects
 FOR INSERT
 WITH CHECK (
-  bucket_id = 'resumes' AND auth.uid()::text = owner::text
+  bucket_id = 'resumes' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 
 -- 5. Allow recruiters to view and download resumes from the storage bucket
@@ -44,7 +44,7 @@ USING (
   bucket_id = 'resumes' AND
   EXISTS (
     SELECT 1 FROM public.users 
-    WHERE users.id = auth.uid() AND users.role = 'recruiter'
+    WHERE users.id = auth.uid() AND users.role = 'admin'
   )
 );
 
@@ -58,6 +58,6 @@ FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.users 
-    WHERE users.id = auth.uid() AND users.role = 'recruiter'
+    WHERE users.id = auth.uid() AND users.role = 'admin'
   )
 );

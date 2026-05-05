@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Briefcase, Users, FileText, CheckCircle, Clock, XCircle, 
-  Plus, TrendingUp, Search, MoreHorizontal, Loader2
+  Plus, TrendingUp, Search, MoreHorizontal, Loader2, Eye
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -12,8 +12,14 @@ import { applicationsAPI, jobsAPI, companiesAPI } from '../services/api';
 import { GlassCard, StatCard, Badge } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { 
+  getAppCandidateName, 
+  getAppCandidateEmail, 
+  getAppJobTitle 
+} from '../data/mockApplications';
+import ApplicationDetailsModal from '../components/admin/ApplicationDetailsModal';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -24,9 +30,13 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const handleStatusChange = async (id: string, newStatus: Application["status"]) => {
     setProcessingId(id);
+    setOpenMenuId(null);
     try {
       await applicationsAPI.updateStatus(id, newStatus);
       setApplications(apps => apps.map(app => 
@@ -41,20 +51,45 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchData() {
+      if (!user?.id) return;
       setIsLoading(true);
       try {
-        const company = await companiesAPI.getByOwnerId(user.id);
+        let company = await companiesAPI.getByOwnerId(user.id);
+        
+        // Auto-fix: if recruiter has no company, create a default one (consistent with AdminJobs)
+        if (!company && user.role === 'admin') {
+          const newCompanyId = await companiesAPI.create({
+            owner_id: user.id,
+            name: user.full_name + "'s Company",
+            industry: 'Technology',
+            size: 'Medium',
+            location: 'Algiers',
+            description: 'Automatically created company profile.'
+          });
+          company = await companiesAPI.getById(newCompanyId);
+        }
+
         if (!company) {
           setJobs([]);
           setApplications([]);
           return;
         }
 
-        const fetchedJobs = await jobsAPI.getByCompanyId(company.id);
-        const allApps = await applicationsAPI.getAll();
+        const [fetchedJobs, allApps] = await Promise.all([
+          jobsAPI.getByCompanyId(company.id),
+          applicationsAPI.getAll()
+        ]);
+        
+        console.log("[AdminDashboard] Fetched Data:", {
+          companyId: company.id,
+          jobsCount: fetchedJobs.length,
+          totalAppsInSystem: allApps.length
+        });
         
         const jobIds = new Set(fetchedJobs.map(j => j.id));
         const filteredApps = allApps.filter(a => jobIds.has(a.job_id));
+
+        console.log("[AdminDashboard] Filtered Applications for this recruiter:", filteredApps.length);
 
         setApplications(filteredApps);
         setJobs(fetchedJobs);
@@ -64,10 +99,8 @@ export default function AdminDashboard() {
         setIsLoading(false);
       }
     }
-    if (user?.id) {
-       fetchData();
-    }
-  }, [user?.id]);
+    fetchData();
+  }, [user?.id, user?.role, user?.full_name]);
 
   const stats = [
     { title: 'Active Jobs', value: jobs.filter(j => j.status === 'active').length, icon: Briefcase, color: 'bg-indigo-500' },
@@ -142,15 +175,15 @@ export default function AdminDashboard() {
                       <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-white dark:bg-white/5 transition-colors group">
                         <td className="px-6 py-4">
                            <div className="flex items-center gap-3">
-                               <Avatar name={app.users?.full_name || 'Candidate'} size="sm" />
+                               <Avatar name={getAppCandidateName(app)} size="sm" />
                                <div className="flex flex-col">
-                                 <span className="font-bold text-sm text-slate-900 dark:text-white">{app.users?.full_name || 'Unknown Candidate'}</span>
-                                 <span className="text-[10px] text-slate-500 font-medium">{app.users?.email || 'N/A'}</span>
+                                 <span className="font-bold text-sm text-slate-900 dark:text-white">{getAppCandidateName(app)}</span>
+                                 <span className="text-[10px] text-slate-500 font-medium">{getAppCandidateEmail(app)}</span>
                                </div>
                            </div>
                         </td>
                         <td className="px-6 py-4">
-                           <span className="text-sm font-bold text-slate-400">{app.jobs?.title || 'Unknown Job'}</span>
+                           <span className="text-sm font-bold text-slate-400">{getAppJobTitle(app)}</span>
                         </td>
                         <td className="px-6 py-4">
                            <Badge variant={app.status === 'accepted' ? 'success' : app.status === 'pending' ? 'warning' : 'info'}>{app.status}</Badge>
@@ -159,22 +192,54 @@ export default function AdminDashboard() {
                            {new Date(app.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 text-center">
-                           <div className="relative group/menu inline-block text-left">
-                             <Button variant="ghost" size="icon" disabled={processingId === app.id}>
+                           <div className="relative inline-block text-left">
+                             <Button 
+                               variant="ghost" 
+                               size="icon" 
+                               disabled={processingId === app.id}
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setOpenMenuId(openMenuId === app.id ? null : app.id);
+                               }}
+                             >
                                {processingId === app.id ? <Loader2 className="w-4 h-4 animate-spin text-indigo-400" /> : <MoreHorizontal className="w-4 h-4" />}
                              </Button>
-                             <div className="absolute right-0 top-full mt-1 w-48 glass rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 hidden group-hover/menu:block z-50">
-                               <button onClick={() => navigate('/admin-applications')} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300">
-                                 View Full Details
-                               </button>
-                               <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
-                               <button disabled={app.status === 'accepted'} onClick={() => handleStatusChange(app.id, 'accepted')} className="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg text-sm transition-colors text-emerald-600 dark:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                                 Accept Application
-                               </button>
-                               <button disabled={app.status === 'rejected'} onClick={() => handleStatusChange(app.id, 'rejected')} className="w-full text-left px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-sm transition-colors text-rose-600 dark:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                                 Reject Application
-                               </button>
-                             </div>
+                             
+                             <AnimatePresence>
+                               {openMenuId === app.id && (
+                                 <>
+                                   <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+                                   <motion.div 
+                                     initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                     className="absolute right-0 top-full mt-1 w-48 glass rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50"
+                                   >
+                                     <button onClick={() => { setSelectedApp(app); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                       <Eye className="w-4 h-4" /> View Application
+                                     </button>
+                                     <button onClick={() => { navigate('/profile'); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                       <Users className="w-4 h-4" /> View Profile
+                                     </button>
+                                     <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+                                     <button 
+                                       disabled={app.status === 'accepted'} 
+                                       onClick={() => handleStatusChange(app.id, 'accepted')} 
+                                       className="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg text-sm transition-colors text-emerald-600 dark:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                     >
+                                       <CheckCircle className="w-4 h-4" /> Accept
+                                     </button>
+                                     <button 
+                                       disabled={app.status === 'rejected'} 
+                                       onClick={() => handleStatusChange(app.id, 'rejected')} 
+                                       className="w-full text-left px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-sm transition-colors text-rose-600 dark:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                     >
+                                       <XCircle className="w-4 h-4" /> Refuse
+                                     </button>
+                                   </motion.div>
+                                 </>
+                               )}
+                             </AnimatePresence>
                            </div>
                         </td>
                       </tr>
@@ -298,6 +363,16 @@ export default function AdminDashboard() {
            </GlassCard>
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedApp && (
+          <ApplicationDetailsModal
+            app={selectedApp}
+            onClose={() => setSelectedApp(null)}
+            onStatusChange={handleStatusChange}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

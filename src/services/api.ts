@@ -17,7 +17,6 @@ export const jobsAPI = {
         throw error;
       }
       
-      console.log(`[jobsAPI] Successfully fetched ${data?.length || 0} jobs.`);
       return (data || []) as JobOffer[];
     } catch (e) {
       console.error('[jobsAPI] Unexpected error fetching jobs:', e);
@@ -160,10 +159,23 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from("applications")
-        .select("*, jobs(title, company, company_id), users(full_name, email, phone, location)")
+        .select(`
+          *,
+          jobs:job_id (
+            title,
+            company,
+            company_id
+          ),
+          users:user_id (
+            full_name,
+            email,
+            phone,
+            location
+          )
+        `)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Application[];
+      return data as unknown as Application[];
     } catch (e) {
       console.error("Error fetching applications:", e);
       return [];
@@ -173,11 +185,24 @@ export const applicationsAPI = {
     try {
       const { data, error } = await supabase
         .from("applications")
-        .select("*, jobs(title, company, company_id), users(full_name, email, phone, location)")
+        .select(`
+          *,
+          jobs:job_id (
+            title,
+            company,
+            company_id
+          ),
+          users:user_id (
+            full_name,
+            email,
+            phone,
+            location
+          )
+        `)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Application[];
+      return data as unknown as Application[];
     } catch (e) {
       console.error("Error fetching user applications:", e);
       return [];
@@ -208,7 +233,7 @@ export const applicationsAPI = {
       return data.id;
     } catch (e) {
       console.error("Error creating application:", e);
-      return "";
+      throw e;
     }
   },
   updateStatus: async (
@@ -229,11 +254,11 @@ export const applicationsAPI = {
 
 // STORAGE
 export const storageAPI = {
-  uploadResume: async (file: File): Promise<string | null> => {
+  uploadResume: async (file: File, userId: string): Promise<string | null> => {
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${userId}/${fileName}`;
 
       const { data, error } = await supabase.storage
         .from("resumes")
@@ -249,7 +274,6 @@ export const storageAPI = {
 
   getResumeUrl: async (path: string): Promise<string | null> => {
     try {
-      // Create a signed URL valid for 60 minutes
       const { data, error } = await supabase.storage
         .from("resumes")
         .createSignedUrl(path, 3600);

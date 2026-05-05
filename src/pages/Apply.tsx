@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { JobOffer } from "../data/mockJobs";
 import { jobsAPI, applicationsAPI, storageAPI } from "../services/api";
+import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/Button";
 import { GlassCard, Input, Badge } from "../components/ui/Shared";
 import { Breadcrumbs } from "../components/ui/Breadcrumbs";
@@ -85,7 +86,7 @@ export default function Apply() {
     setIsSubmitting(true);
 
     try {
-      const resumePath = await storageAPI.uploadResume(selectedFile);
+      const resumePath = await storageAPI.uploadResume(selectedFile, user.id);
       if (!resumePath) {
         throw new Error("Failed to upload resume");
       }
@@ -99,8 +100,15 @@ export default function Apply() {
         applied_at: new Date().toISOString(),
       });
 
+      // Get job owner's ID from the company to send notification to the correct recruiter
+      const { data: companyData } = await supabase
+        .from('companies')
+        .select('owner_id')
+        .eq('id', job.company_id)
+        .single();
+
       addNotification({
-        userId: job.owner_id || "admin",
+        userId: companyData?.owner_id || "admin",
         title: "New Job Application",
         message: `${user?.full_name} has applied for the ${job.title} position at ${job.company}.`,
         type: "application",
@@ -108,6 +116,11 @@ export default function Apply() {
       });
 
       setIsSuccess(true);
+      
+      // Redirect after a short delay to let user see success message
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
     } catch (err) {
       console.error(err);
       alert("Failed to submit application. Ensure you are signed in.");
