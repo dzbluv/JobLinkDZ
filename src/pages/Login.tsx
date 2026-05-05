@@ -169,7 +169,7 @@ export default function Login() {
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className={cn(
-                        'w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black',
+                        'w-9 h-9 rounded-xl flex items-center justify-center text-slate-900 dark:text-white text-xs font-black',
                         account.role === 'admin' ? 'bg-gradient-to-br from-violet-500 to-indigo-600' : 'bg-gradient-to-br from-cyan-500 to-blue-600'
                       )}>
                         <Icon className="w-5 h-5" />

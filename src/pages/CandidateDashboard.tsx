@@ -175,7 +175,7 @@ export default function CandidateDashboard() {
            <section className="space-y-6">
              <div className="flex justify-between items-center px-2">
                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">Recent Applications</h2>
-               <Link to="/jobs" className="text-slate-500 text-sm font-bold hover:text-white transition-all">View All</Link>
+               <Link to="/jobs" className="text-slate-500 text-sm font-bold hover:text-slate-900 dark:text-white transition-all">View All</Link>
              </div>
              
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -214,7 +214,7 @@ export default function CandidateDashboard() {
            <GlassCard className="p-8 text-center bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10" hover={false}>
               <div className="relative inline-block mb-6">
                 <Avatar name={user?.full_name || 'User'} initials={user?.avatar_initials || undefined} color={user?.avatar_color || undefined} size="2xl" />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-2xl flex items-center justify-center text-white border-4 border-[#020617] shadow-lg">
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-2xl flex items-center justify-center text-slate-900 dark:text-white border-4 border-[#020617] shadow-lg">
                   <CheckCircle className="w-4 h-4" />
                 </div>
               </div>
@@ -294,7 +294,7 @@ export default function CandidateDashboard() {
                 </div>
               </div>
               <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5">
-                <Link to="/settings" className="text-[10px] font-bold text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors flex items-center justify-between group">
+                <Link to="/settings" className="text-[10px] font-bold text-slate-500 hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors flex items-center justify-between group">
                   MANAGE NOTIFICATIONS
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </Link>

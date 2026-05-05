@@ -214,7 +214,7 @@ export default function Apply() {
                     initial={{ scale: 0, opacity: 0, rotate: -45 }}
                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
                     transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                    className="w-28 h-28 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40 relative z-10"
+                    className="w-28 h-28 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-slate-900 dark:text-white shadow-2xl shadow-emerald-500/40 relative z-10"
                   >
                      <CheckCircle2 className="w-14 h-14" />
                   </motion.div>
@@ -223,7 +223,7 @@ export default function Apply() {
                     transition={{ duration: 2, repeat: Infinity }}
                     className="absolute inset-0 bg-emerald-500 rounded-[2.5rem]"
                   />
-                  <div className="absolute -top-4 -right-4 w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-lg border-4 border-slate-950 z-20">
+                  <div className="absolute -top-4 -right-4 w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-slate-900 dark:text-white shadow-lg border-4 border-slate-950 z-20">
                     <Briefcase className="w-6 h-6" />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function Apply() {
                     <span>Redirecting to Dashboard</span>
                     <span className="text-indigo-400 italic text-sm">{countdown}s</span>
                   </div>
-                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                  <div className="h-2 w-full bg-white dark:bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                     <motion.div 
                       initial={{ width: "100%" }}
                       animate={{ width: "0%" }}
@@ -255,7 +255,7 @@ export default function Apply() {
                      </Button>
                    </Link>
                    <Link to="/dashboard">
-                     <Button variant="ghost" className="h-14 px-10 rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all">
+                     <Button variant="ghost" className="h-14 px-10 rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white dark:bg-white/5 text-xs font-black uppercase tracking-widest transition-all">
                        My Dashboard
                      </Button>
                    </Link>

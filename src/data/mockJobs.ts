@@ -120,5 +120,83 @@ export const mockJobs: JobOffer[] = [
     created_at: '2024-03-24T11:20:00Z',
     status: 'active',
     skills: ['Social Media', 'SEO', 'Content Strategy'],
+  },
+  {
+    id: '5',
+    title: 'Supermarket Cashier',
+    company: 'Uno Hypermarket',
+    company_id: 'c5',
+    logo: 'https://api.dicebear.com/7.x/initials/svg?seed=Uno&backgroundColor=10b981',
+    location: 'Setif',
+    job_type: 'Full-time',
+    salary_range: '30000 - 45000 DA / month',
+    description: 'We are looking for a friendly and efficient Cashier to manage all transactions with customers accurately and efficiently at our Setif branch.',
+    requirements: [
+      'High school diploma or equivalent',
+      'Basic math and computer skills',
+      'Strong communication and time management skills',
+      'Customer satisfaction-oriented'
+    ],
+    responsibilities: [
+      'Handle cash, credit, and scanner transactions',
+      'Scan goods and ensure pricing is accurate',
+      'Issue receipts, refunds, change or tickets',
+      'Maintain a clean and tidy checkout area'
+    ],
+    created_at: '2024-03-25T08:00:00Z',
+    status: 'active',
+    skills: ['Customer Service', 'Cash Handling', 'POS Systems'],
+  },
+  {
+    id: '6',
+    title: 'Warehouse Manager',
+    company: 'Logistics Pro DZ',
+    company_id: 'c6',
+    logo: 'https://api.dicebear.com/7.x/initials/svg?seed=Logistics&backgroundColor=8b5cf6',
+    location: 'Blida',
+    job_type: 'Full-time',
+    salary_range: '80000 - 120000 DA / month',
+    description: 'Seeking an experienced Warehouse Manager to direct receiving, warehousing, and distribution operations.',
+    requirements: [
+      'Proven work experience as a Warehouse Manager',
+      'Expertise in warehouse management procedures and best practices',
+      'Proven ability to implement process improvement initiatives',
+      'Strong knowledge of warehousing Key Performance Indicators (KPIs)'
+    ],
+    responsibilities: [
+      'Strategically manage warehouse in compliance with company policies',
+      'Oversee receiving, warehousing, distribution and maintenance operations',
+      'Setup layout and ensure efficient space utilization',
+      'Manage stock control and reconcile with data storage system'
+    ],
+    created_at: '2024-03-26T09:30:00Z',
+    status: 'active',
+    skills: ['Logistics', 'Inventory Management', 'Leadership'],
+  },
+  {
+    id: '7',
+    title: 'Delivery Driver',
+    company: 'Yassir Express',
+    company_id: 'c7',
+    logo: 'https://api.dicebear.com/7.x/initials/svg?seed=Yassir&backgroundColor=ef4444',
+    location: 'Annaba',
+    job_type: 'Contract',
+    salary_range: '40000 - 70000 DA / month',
+    description: 'Join our growing delivery network in Annaba. Flexible hours and competitive pay based on successful deliveries.',
+    requirements: [
+      'Valid driver license',
+      'Clean driving record',
+      'Own a reliable vehicle or motorcycle',
+      'Smartphone with GPS and internet access'
+    ],
+    responsibilities: [
+      'Deliver a wide variety of items to different addresses and through different routes',
+      'Follow routes and time schedule',
+      'Load, unload, prepare, inspect and operate a delivery vehicle',
+      'Collect payments'
+    ],
+    created_at: '2024-03-27T10:15:00Z',
+    status: 'active',
+    skills: ['Driving', 'Time Management', 'Customer Service'],
   }
 ];

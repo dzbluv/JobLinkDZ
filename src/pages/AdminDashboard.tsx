@@ -116,7 +116,7 @@ export default function AdminDashboard() {
                         </td>
                       </tr>
                     ) : recentApplications.map((app, i) => (
-                      <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                      <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-white dark:bg-white/5 transition-colors group">
                         <td className="px-6 py-4">
                            <div className="flex items-center gap-3">
                               <Avatar name={`Applicant ${i + 1}`} size="sm" />
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
                    { label: 'Email Server', status: 'Ready', icon: CheckCircle, color: 'text-emerald-500' },
                    { label: 'Auth Provider', status: 'Verified', icon: CheckCircle, color: 'text-emerald-500' }
                  ].map((item, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 glass rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                   <div key={i} className="flex items-center justify-between p-4 glass rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white dark:bg-white/5 transition-colors">
                       <div className="flex items-center gap-3">
                          <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10">
                            <item.icon className={cn("w-4 h-4", item.color)} />
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
               </div>
            </div>
 
-           <GlassCard className="p-8 text-center bg-white/2 border border-white/10 border-dashed rounded-3xl">
+           <GlassCard className="p-8 text-center bg-white/2 border border-slate-200 dark:border-white/10 border-dashed rounded-3xl">
               <p className="text-[10px] text-slate-500 mb-4 font-bold uppercase tracking-widest">Recruitment Insights</p>
               <p className="text-sm text-slate-400 mb-6 italic leading-relaxed">"Review applications promptly to increase hiring velocity by up to 2.4x."</p>
               <Button size="sm" variant="outline" className="w-full">Generate Detailed Analytics</Button>

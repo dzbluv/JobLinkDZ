@@ -58,7 +58,7 @@ export function JobCard({ job }: { job: JobOffer }) {
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
         <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{job.salary_range}</span>
         <Link to={`/jobs/${job.id}`} className="group/btn">
-          <Button size="sm" className="px-4 py-2 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white group-hover/btn:bg-indigo-600 group-hover/btn:text-white transition-all gap-2 flex items-center border-none">
+          <Button size="sm" className="px-4 py-2 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white group-hover/btn:bg-indigo-600 group-hover/btn:text-slate-900 dark:text-white transition-all gap-2 flex items-center border-none">
             View Details
             <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
           </Button>
@@ -103,7 +103,7 @@ export function ApplicationCard({ application }: { application: Application }) {
           <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{application.candidate_name}</p>
         </div>
         <Link to={`/candidate/${application.candidate_id}`}>
-          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-white hover:bg-indigo-600 transition-all">
+          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-white hover:bg-indigo-600 transition-all">
             <ArrowRight className="w-4 h-4" />
           </div>
         </Link>
@@ -116,7 +116,7 @@ export function ApplicationCard({ application }: { application: Application }) {
             Applied {new Date(application.created_at).toLocaleDateString()}
           </p>
         </div>
-        <Link to={`/jobs/${application.job_offer_id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-white transition-colors italic group/specs">
+        <Link to={`/jobs/${application.job_offer_id}`} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-tighter hover:text-slate-950 dark:hover:text-slate-900 dark:text-white transition-colors italic group/specs">
           Job Specs
           <ChevronRight className="w-3.5 h-3.5 group-hover/specs:translate-x-1 transition-transform" />
         </Link>

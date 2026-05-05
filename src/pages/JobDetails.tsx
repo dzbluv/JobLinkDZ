@@ -151,7 +151,7 @@ export default function JobDetails() {
                    { label: 'Working Hours', value: '40 hours / week', icon: Clock, color: 'text-indigo-400' },
                  ].map((item, i) => (
                    <div key={i} className="flex gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 shadow-sm flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-center flex-shrink-0">
                          <item.icon className={cn("w-5 h-5", item.color)} />
                       </div>
                       <div>
@@ -170,10 +170,10 @@ export default function JobDetails() {
               </p>
            </GlassCard>
 
-           <div className="p-8 rounded-3xl bg-white/2 border border-white/10 text-center backdrop-blur-md">
+           <div className="p-8 rounded-3xl bg-white/2 border border-slate-200 dark:border-white/10 text-center backdrop-blur-md">
               <h4 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4">Company Profile</h4>
               {job.logo && (
-                <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center p-3 mx-auto mb-4 border border-white/10 overflow-hidden shadow-2xl">
+                <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center p-3 mx-auto mb-4 border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl">
                    <img src={job.logo} alt={job.company} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                 </div>
               )}

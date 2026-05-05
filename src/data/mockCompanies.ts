@@ -59,5 +59,41 @@ export const mockCompanies: Company[] = [
     employees: '15-30',
     size: 'Small',
     founded: '2012'
+  },
+  {
+    id: 'c5',
+    name: 'Uno Hypermarket',
+    logo: 'UH',
+    industry: 'Retail & Supermarkets',
+    location: 'Setif, Algeria',
+    website: 'https://uno.dz',
+    description: 'Uno Hypermarket is one of the largest retail chains in Algeria, providing fresh goods, electronics, and household items to millions of customers daily.',
+    employees: '500-1000',
+    size: 'Large',
+    founded: '2008'
+  },
+  {
+    id: 'c6',
+    name: 'Logistics Pro DZ',
+    logo: 'LP',
+    industry: 'Supply Chain & Logistics',
+    location: 'Blida, Algeria',
+    website: 'https://logisticspro.dz',
+    description: 'Logistics Pro offers comprehensive supply chain solutions, from warehousing to national distribution networks, ensuring quick and secure delivery across the country.',
+    employees: '100-250',
+    size: 'Medium',
+    founded: '2016'
+  },
+  {
+    id: 'c7',
+    name: 'Yassir Express',
+    logo: 'YE',
+    industry: 'Transportation & Delivery',
+    location: 'Annaba, Algeria',
+    website: 'https://yassir.dz',
+    description: 'Yassir Express revolutionized the delivery and ride-hailing market in Algeria. We connect drivers, couriers, and customers through a seamless digital experience.',
+    employees: '1000+',
+    size: 'Large',
+    founded: '2017'
   }
 ];

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, LayoutDashboard, Briefcase, User as UserIcon, Settings, ChevronRight, Bell, CheckCircle, Clock } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, Briefcase, User as UserIcon, Settings, ChevronRight, Bell, CheckCircle, Clock, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
@@ -11,6 +12,7 @@ import { cn } from '../../lib/utils';
 export function Navbar() {
   const { user, logout } = useAuth();
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -49,13 +51,16 @@ export function Navbar() {
             whileTap={{ scale: 0.95 }}
             className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-cyan-400 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20 transition-transform"
           >
-            <Briefcase className="w-5 h-5 text-white" />
+            <Briefcase className="w-5 h-5 text-slate-900 dark:text-white" />
           </motion.div>
-          <span className="text-xl font-bold tracking-tight text-slate-950 dark:text-white transition-colors">JobLink<span className="text-cyan-600 dark:text-cyan-400 italic">DZ</span></span>
+          <span className="text-xl font-black tracking-tighter uppercase transition-colors">
+            <span className="text-slate-500">JobLink</span>
+            <span className="text-indigo-600 dark:text-cyan-400 italic font-black">DZ</span>
+          </span>
         </Link>
 
         {/* Desktop Menu */}
-        <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
           {navLinks.map((link) => (
             <Link 
               key={link.path} 
@@ -64,8 +69,10 @@ export function Navbar() {
             >
               <motion.span
                 className={cn(
-                  "hover:text-slate-950 dark:hover:text-white inline-block transition-colors",
-                  location.pathname === link.path ? "text-slate-950 dark:text-white font-bold" : ""
+                  "inline-block transition-colors",
+                  location.pathname === link.path 
+                    ? "text-indigo-600 dark:text-white font-bold" 
+                    : "hover:text-indigo-600 dark:hover:text-white"
                 )}
                 whileHover={{ y: -1 }}
                 whileTap={{ y: 0 }}
@@ -75,7 +82,7 @@ export function Navbar() {
               {location.pathname === link.path && (
                 <motion.div 
                   layoutId="activeNav"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500 rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-500 rounded-full"
                   transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
                 />
               )}
@@ -86,20 +93,28 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
+              {/* Theme Toggle */}
+              <button 
+                onClick={toggleTheme}
+                className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+
               {/* Notification Center */}
               <div className="relative">
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors relative text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
+                  className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors relative text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-900 dark:text-white"
                 >
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
                     <motion.span 
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute top-1 right-1 w-4 h-4 bg-indigo-600 dark:bg-indigo-500 border-2 border-white dark:border-[#020617] rounded-full flex items-center justify-center text-[8px] font-bold text-white shadow-sm"
+                      className="absolute top-1 right-1 w-4 h-4 bg-indigo-600 dark:bg-indigo-500 border-2 border-white dark:border-[#020617] rounded-full flex items-center justify-center text-[8px] font-bold text-slate-900 dark:text-white shadow-sm"
                     >
                       {unreadCount}
                     </motion.span>
@@ -140,7 +155,7 @@ export function Navbar() {
                           ) : (
                             <div className="divide-y divide-slate-100 dark:divide-white/5">
                               {notifications.map((n) => (
-                                <div key={n.id} className={cn("p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors", n.status === 'unread' ? "bg-indigo-50/50 dark:bg-white/[0.02]" : "opacity-60")}>
+                                <div key={n.id} className={cn("p-4 hover:bg-slate-50 dark:hover:bg-white dark:bg-white/5 transition-colors", n.status === 'unread' ? "bg-indigo-50/50 dark:bg-white/[0.02]" : "opacity-60")}>
                                   <div className="flex gap-3">
                                     <div className={cn(
                                       "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
@@ -176,9 +191,15 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
+              <button 
+                onClick={toggleTheme}
+                className="p-2 mr-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
               <Link to="/login">
-                <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white">Login</Button>
+                <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-slate-900 dark:text-white">Login</Button>
               </Link>
               <Link to="/register">
                 <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors">Get Started</Button>
@@ -191,7 +212,7 @@ export function Navbar() {
         <div className="md:hidden flex items-center gap-3">
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400 dark:hover:text-white"
+            className="p-2 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400 dark:hover:text-slate-900 dark:text-white"
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -214,14 +235,14 @@ export function Navbar() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0.5 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 h-full w-full max-w-sm bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl z-[60] shadow-2xl flex flex-col md:hidden overflow-hidden"
+              className="fixed top-0 right-0 h-full w-full max-w-sm bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-2xl z-[60] shadow-2xl flex flex-col md:hidden overflow-hidden"
             >
-              <div className="p-6 flex justify-between items-center border-b border-slate-100 dark:border-white/5">
+              <div className="p-6 flex justify-between items-center border-b border-slate-200 dark:border-white/5">
                 <span className="text-xl font-bold text-slate-950 dark:text-white uppercase tracking-tighter italic">Navigation</span>
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsOpen(false)} 
-                  className="p-2 text-slate-400 hover:text-slate-950 dark:hover:text-white"
+                  className="p-2 text-slate-500 hover:text-slate-950 dark:hover:text-white"
                 >
                   <X className="w-6 h-6" />
                 </motion.button>
@@ -255,8 +276,8 @@ export function Navbar() {
                         className={cn(
                           "flex items-center justify-between p-4 rounded-2xl transition-all border border-transparent",
                           location.pathname === link.path 
-                            ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-bold" 
-                            : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 font-bold" 
+                            : "hover:bg-slate-200 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         )}
                       >
                         <div className="flex items-center gap-3">
@@ -274,7 +295,7 @@ export function Navbar() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="p-6 mt-auto border-t border-white/5 flex flex-col gap-4"
+                className="p-6 mt-auto border-t border-slate-200 dark:border-white/5 flex flex-col gap-4"
               >
                 {user ? (
                   <>
@@ -295,7 +316,7 @@ export function Navbar() {
                       <Button variant="outline" className="w-full h-12 rounded-xl font-bold text-sm">Login</Button>
                     </Link>
                     <Link to="/register" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full h-12 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500">Join</Button>
+                      <Button className="w-full h-12 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white">Join</Button>
                     </Link>
                   </div>
                 )}

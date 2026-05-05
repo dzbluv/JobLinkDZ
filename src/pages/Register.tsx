@@ -63,7 +63,7 @@ export default function Register() {
               className={`p-6 rounded-2xl border-2 transition-colors duration-150 ease-in-out transform will-change-transform flex flex-col items-center text-center gap-4 ${role === 'candidate' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/50'}`}
               type="button"
             >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${role === 'candidate' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${role === 'candidate' ? 'bg-primary text-slate-900 dark:text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                 <UserCircle className="w-8 h-8" />
               </div>
               <div>
@@ -77,7 +77,7 @@ export default function Register() {
               className={`p-6 rounded-2xl border-2 transition-colors duration-150 ease-in-out transform will-change-transform flex flex-col items-center text-center gap-4 ${role === 'admin' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/50'}`}
               type="button"
             >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${role === 'admin' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${role === 'admin' ? 'bg-primary text-slate-900 dark:text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                 <Building2 className="w-8 h-8" />
               </div>
               <div>

@@ -164,7 +164,7 @@ export default function CompanyProfile() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.01 }}
-                      className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] backdrop-blur-md transition-all hover:bg-white/[0.08] relative overflow-hidden group/card"
+                      className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-8 rounded-[2.5rem] backdrop-blur-md transition-all hover:bg-white/[0.08] relative overflow-hidden group/card"
                     >
                       {/* Decorative Gradient Background */}
                       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16 group-hover/card:bg-indigo-500/10 transition-colors" />

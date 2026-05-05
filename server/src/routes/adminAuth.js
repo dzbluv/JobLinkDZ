@@ -55,4 +55,36 @@ router.post('/create-user', async (req, res) => {
   }
 });
 
+// Delete a user
+router.delete('/delete-user/:id', async (req, res) => {
+  const { id } = req.params;
+  const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE;
+
+  if (!SUPABASE_URL || !SERVICE_ROLE) {
+    return res.status(500).json({ error: 'Supabase service role key not configured on server' });
+  }
+
+  try {
+    const authResp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SERVICE_ROLE}`,
+        'apikey': SERVICE_ROLE
+      }
+    });
+
+    if (!authResp.ok) {
+      const errorJson = await authResp.json().catch(() => ({}));
+      return res.status(authResp.status).json({ error: errorJson });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('admin/delete-user error', err);
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
 module.exports = router;

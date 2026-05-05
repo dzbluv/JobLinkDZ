@@ -143,13 +143,13 @@ export default function AdminJobs() {
            <input 
              type="text"
              placeholder="Search postings..."
-             className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-indigo-500/50 transition-all font-medium"
+             className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium"
              value={search}
              onChange={(e) => setSearch(e.target.value)}
            />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-           <Button variant="ghost" className="flex-1 md:flex-none gap-2 text-slate-400 hover:text-white" onClick={handleSelectAll}>
+           <Button variant="ghost" className="flex-1 md:flex-none gap-2 text-slate-400 hover:text-slate-900 dark:text-white" onClick={handleSelectAll}>
               {selectedJobs.length === filteredJobs.length && filteredJobs.length > 0 ? 'Deselect All' : 'Select All'}
            </Button>
            <Button variant="outline" className="flex-1 md:flex-none">Export CSV</Button>
@@ -181,13 +181,13 @@ export default function AdminJobs() {
                    <button 
                      onClick={() => toggleJobSelection(job.id)}
                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-                       isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-white/10 hover:border-white/30'
+                       isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-200 dark:border-white/10 hover:border-white/30'
                      }`}
                    >
-                     {isSelected && <Check className="w-4 h-4 text-white" />}
+                     {isSelected && <Check className="w-4 h-4 text-slate-900 dark:text-white" />}
                    </button>
 
-                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/10 overflow-hidden p-2">
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10 overflow-hidden p-2">
                       {job.logo ? (
                         <img src={job.logo} alt={job.company} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                       ) : (
@@ -214,7 +214,7 @@ export default function AdminJobs() {
                       </div>
                       <div className="h-10 w-px bg-white/10" />
                       <div>
-                         <p className="text-xl font-bold text-white text-emerald-400">{newApplicants}</p>
+                         <p className="text-xl font-bold text-slate-900 dark:text-white text-emerald-400">{newApplicants}</p>
                          <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">New</p>
                       </div>
                    </div>
@@ -238,10 +238,10 @@ export default function AdminJobs() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 glass px-8 py-4 rounded-3xl border border-white/10 shadow-2xl flex items-center gap-8 min-w-[400px]"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 glass px-8 py-4 rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center gap-8 min-w-[400px]"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-slate-900 dark:text-white font-bold animate-pulse">
                 {selectedJobs.length}
               </div>
               <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Jobs Selected</p>
@@ -268,7 +268,7 @@ export default function AdminJobs() {
             
             <button 
               onClick={() => setSelectedJobs([])}
-              className="ml-4 p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500"
+              className="ml-4 p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500"
             >
               <Plus className="w-5 h-5 rotate-45" />
             </button>
@@ -290,13 +290,13 @@ export default function AdminJobs() {
                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="relative z-10 w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
+               className="relative z-10 w-full max-w-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
              >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
                 
                 <div className="flex justify-between items-center mb-8 relative z-10">
                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">Post a New Job</h2>
-                   <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500">
+                   <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500">
                      <Plus className="w-6 h-6 rotate-45" />
                    </button>
                 </div>
@@ -334,7 +334,7 @@ export default function AdminJobs() {
                     <div className="space-y-1">
                       <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Job Type</label>
                       <select 
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 transition-all font-medium appearance-none"
+                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium appearance-none"
                         value={form.type}
                         onChange={(e) => setForm({...form, type: e.target.value})}
                       >
@@ -346,7 +346,7 @@ export default function AdminJobs() {
                     </div>
                     <div className="col-span-2 space-y-1">
                        <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Description</label>
-                       <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." />
+                       <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." />
                     </div>
                     <div className="col-span-2 pt-6">
                        <Button type="submit" className="w-full h-14 text-lg" isLoading={isPosting}>

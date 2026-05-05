@@ -55,7 +55,7 @@ export default function Landing() {
         >
           <Badge variant="info">Recruitment Reinvented</Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mt-6 mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
-            Find your next opportunity with <span className="font-extrabold italic">JobLinkDZ</span>
+            Find your next opportunity with <span className="font-extrabold italic text-indigo-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-primary dark:to-accent">JobLinkDZ</span>
           </h1>
           <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
             Discover thousands of jobs, apply with one click using your digital CV, and track your applications in real-time. The future of hiring in Algeria starts here.
@@ -92,7 +92,7 @@ export default function Landing() {
           </div>
           {/* Floating UI Elements */}
           <GlassCard className="absolute -bottom-6 -left-6 md:-left-12 p-4 flex items-center gap-4 bg-white/90 dark:bg-slate-900/90 z-20" hover={false}>
-            <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white">
+            <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-slate-900 dark:text-white">
                <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
@@ -102,7 +102,7 @@ export default function Landing() {
           </GlassCard>
 
           <GlassCard className="absolute -top-6 -right-6 md:-right-12 p-4 flex items-center gap-4 bg-white/90 dark:bg-slate-900/90 z-20" hover={false}>
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white">
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-slate-900 dark:text-white">
                <TrendingUp className="w-6 h-6" />
             </div>
             <div>

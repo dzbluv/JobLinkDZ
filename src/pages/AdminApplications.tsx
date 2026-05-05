@@ -26,7 +26,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="w-full max-w-4xl max-h-[90vh] overflow-hidden glass rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col"
+        className="w-full max-w-4xl max-h-[90vh] overflow-hidden glass rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
@@ -41,7 +41,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+            className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,13 +64,13 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
                   <FileText className="w-3.5 h-3.5" /> CV Preview
                 </h3>
                 <div className="w-full rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden">
-                  <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between">
+                  <div className="bg-slate-50 dark:bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between">
                      <div className="flex items-center gap-3">
                         <FileText className="w-4 h-4 text-indigo-400" />
                         <span className="text-xs font-bold text-slate-900 dark:text-white italic">{app.cv_url}</span>
                      </div>
                      <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-white">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-slate-900 dark:text-white">
                            <Download className="w-3.5 h-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-indigo-400">
@@ -397,7 +397,7 @@ export default function AdminApplications() {
 
       <div className="mt-12 p-8 glass rounded-3xl border border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-6">
          <div className="flex gap-4 items-center">
-            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary text-slate-900 dark:text-white flex items-center justify-center">
                <Mail className="w-6 h-6" />
             </div>
             <div>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bell, Lock, Shield, User as UserIcon, Palette, Smartphone, Globe, Mail, Save, Trash2, Eye, EyeOff, Search, MapPin, Briefcase, Plus, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Lock, Shield, User as UserIcon, Palette, Smartphone, Globe, Mail, Save, Trash2, Eye, EyeOff, Search, MapPin, Briefcase, Plus, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useJobAlerts } from '../context/JobAlertContext';
 import { GlassCard, Badge, Input } from '../components/ui/Shared';
@@ -21,19 +21,115 @@ export default function Settings() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState('');
   
   const handleChangePassword = async () => {
-    if (!newPassword) return;
+    if (!currentPassword || !newPassword) {
+      setPasswordStatus('Please enter both passwords.');
+      return;
+    }
+    if (!user?.email) return;
+
     try {
+      setPasswordStatus('Verifying...');
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        setPasswordStatus('Incorrect current password.');
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
+      
       setPasswordStatus('Password updated successfully!');
+      setCurrentPassword('');
       setNewPassword('');
+    } catch (err: any) {
+      setPasswordStatus(err.message || 'Error updating password.');
+    }
+  };
+
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaQrCode, setMfaQrCode] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
+  const [isMfaEnabled, setIsMfaEnabled] = useState(false);
+  const [mfaStatus, setMfaStatus] = useState('');
+
+  // Check initial MFA status
+  useEffect(() => {
+    const checkMfa = async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      if (data && data.totp.length > 0 && data.totp[0].status === 'verified') {
+        setIsMfaEnabled(true);
+      }
+    };
+    checkMfa();
+  }, []);
+
+  const handleEnableMfa = async () => {
+    try {
+      setMfaStatus('Loading...');
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+      if (error) throw error;
+      setMfaFactorId(data.id);
+      setMfaQrCode(data.totp.qr_code);
+      setMfaStatus('Scan the QR code and enter the 6-digit code.');
+    } catch (err: any) {
+      setMfaStatus(err.message || 'Error enabling MFA');
+    }
+  };
+
+  const handleVerifyMfa = async () => {
+    if (!mfaFactorId || !mfaCode) return;
+    try {
+      setMfaStatus('Verifying...');
+      const challenge = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+      if (challenge.error) throw challenge.error;
+
+      const verify = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: challenge.data.id,
+        code: mfaCode
+      });
+      if (verify.error) throw verify.error;
+
+      setIsMfaEnabled(true);
+      setMfaFactorId(null);
+      setMfaQrCode(null);
+      setMfaStatus('Two-Factor Authentication is now enabled!');
+    } catch (err: any) {
+      setMfaStatus(err.message || 'Invalid code. Try again.');
+    }
+  };
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) return;
+    
+    setIsDeleting(true);
+    try {
+      // Point to backend admin route to fully wipe the user
+      const response = await fetch(`http://localhost:4000/api/admin/delete-user/${user.id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete account');
+      await supabase.auth.signOut();
+      window.location.href = '/'; // force reload to clear states
     } catch (err) {
-      setPasswordStatus('Error updating password.');
+      console.error(err);
+      alert('Error deleting account from database. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -72,7 +168,7 @@ export default function Settings() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium text-sm ${
                   activeTab === tab.id 
                     ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-                    : 'text-slate-400 hover:bg-white/5'
+                    : 'text-slate-400 hover:bg-slate-50 dark:bg-white/5'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -80,10 +176,14 @@ export default function Settings() {
               </button>
             ))}
             
-            <div className="pt-8 mt-8 border-t border-white/5">
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-500/5 transition-all font-medium text-sm">
-                <Trash2 className="w-4 h-4" />
-                Delete Account
+            <div className="pt-8 mt-8 border-t border-slate-200 dark:border-white/5">
+              <button 
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-500/5 transition-all font-medium text-sm"
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {isDeleting ? 'Deleting...' : 'Delete Account'}
               </button>
             </div>
           </aside>
@@ -105,7 +205,7 @@ export default function Settings() {
                       { id: 'tips', label: 'Recruitment tips & news', desc: 'Receive monthly newsletter with career advice.' },
                       { id: 'security', label: 'Security alerts', desc: 'Notifications about your account security and login attempts.' }
                     ].map((item) => (
-                      <div key={item.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                      <div key={item.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                         <div className="flex-1">
                           <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{item.label}</p>
                           <p className="text-[10px] text-slate-500">{item.desc}</p>
@@ -126,7 +226,7 @@ export default function Settings() {
                     <p className="text-xs text-slate-500">Stay notified when new jobs match your interests.</p>
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                  <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white italic">Create New Alert</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
@@ -148,15 +248,15 @@ export default function Settings() {
                       <div className="space-y-2">
                         <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Job Type</label>
                         <select 
-                          className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 transition-all"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all"
                           value={newAlert.jobType}
                           onChange={(e) => setNewAlert({...newAlert, jobType: e.target.value})}
                         >
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="">Any Type</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Full-time">Full-time</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Part-time">Part-time</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Remote">Remote</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Contract">Contract</option>
+                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="">Any Type</option>
+                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Full-time">Full-time</option>
+                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Part-time">Part-time</option>
+                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Remote">Remote</option>
+                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Contract">Contract</option>
                         </select>
                       </div>
                     </div>
@@ -174,14 +274,14 @@ export default function Settings() {
                   <div className="space-y-4">
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white italic">Your Active Alerts</h4>
                     {alerts.length === 0 ? (
-                      <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                      <div className="p-12 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-3xl">
                         <Search className="w-8 h-8 text-slate-700 mx-auto mb-2" />
                         <p className="text-xs text-slate-500 italic">No custom alerts set up yet.</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
                         {alerts.map((alert) => (
-                          <div key={alert.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl group hover:border-indigo-500/30 transition-all">
+                          <div key={alert.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl group hover:border-indigo-500/30 transition-all">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
                                 <Bell className="w-4 h-4" />
@@ -218,7 +318,7 @@ export default function Settings() {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex items-center justify-between">
                        <div>
                           <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Public Profile</p>
                           <p className="text-[10px] text-slate-500">
@@ -245,7 +345,7 @@ export default function Settings() {
                        <div className="space-y-2">
                           <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Language</label>
                           <select 
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all"
+                              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all"
                               value={i18n.language}
                               onChange={(e) => {
                                 i18n.changeLanguage(e.target.value);
@@ -254,16 +354,16 @@ export default function Settings() {
                                 else document.dir = 'ltr';
                               }}
                             >
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="en">English (US)</option>
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="fr">Français</option>
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="ar">العربية</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="en">English (US)</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="fr">Français</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="ar">العربية</option>
                           </select>
                        </div>
                        <div className="space-y-2">
                           <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Timezone</label>
-                          <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 transition-all">
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="dz">Algiers (GMT+1)</option>
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="utc">UTC / GMT</option>
+                          <select className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all">
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="dz">Algiers (GMT+1)</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="utc">UTC / GMT</option>
                           </select>
                        </div>
                     </div>
@@ -282,8 +382,20 @@ export default function Settings() {
                     <div className="space-y-2">
                       <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('Current Password')}</label>
                       <div className="relative">
-                        <input type="password" value="••••••••" disabled className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-white/50 cursor-not-allowed" />
-                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                        <input 
+                          type={showCurrentPassword ? 'text' : 'password'} 
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="Enter current password"
+                          className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all pr-10" 
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                        >
+                          {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
 
@@ -311,15 +423,43 @@ export default function Settings() {
                       {passwordStatus && <p className="text-xs font-bold text-indigo-500 px-2 mt-1">{passwordStatus}</p>}
                     </div>
 
-                    <div className="mt-8 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                          <Shield className="w-8 h-8 text-indigo-400" />
-                          <div>
-                             <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Two-Factor Authentication</p>
-                             <p className="text-[10px] text-slate-500">Add an extra layer of security to your account.</p>
-                          </div>
+                    <div className="mt-8 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 flex flex-col gap-4">
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                            <Shield className="w-8 h-8 text-indigo-400" />
+                            <div>
+                               <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Two-Factor Authentication</p>
+                               <p className="text-[10px] text-slate-500">{isMfaEnabled ? 'Your account is secured with 2FA.' : 'Add an extra layer of security to your account.'}</p>
+                            </div>
+                         </div>
+                         {!isMfaEnabled && !mfaFactorId && (
+                           <Button size="sm" onClick={handleEnableMfa}>Enable</Button>
+                         )}
+                         {isMfaEnabled && (
+                           <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Enabled</span>
+                         )}
                        </div>
-                       <Button size="sm">Enable</Button>
+
+                       {mfaFactorId && !isMfaEnabled && (
+                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-white/10 mt-2">
+                           <p className="text-sm text-slate-900 dark:text-white mb-4">1. Scan this QR code with your authenticator app (e.g., Google Authenticator, Authy).</p>
+                           {mfaQrCode && (
+                             <div className="bg-white p-2 rounded-lg inline-block mb-4" dangerouslySetInnerHTML={{ __html: mfaQrCode }} />
+                           )}
+                           <p className="text-sm text-slate-900 dark:text-white mb-2">2. Enter the 6-digit code from the app:</p>
+                           <div className="flex gap-2">
+                             <input 
+                               type="text" 
+                               value={mfaCode}
+                               onChange={(e) => setMfaCode(e.target.value)}
+                               placeholder="000000"
+                               className="w-32 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all text-center tracking-widest font-mono"
+                             />
+                             <Button size="sm" onClick={handleVerifyMfa}>Verify</Button>
+                           </div>
+                           {mfaStatus && <p className="text-xs font-bold text-indigo-500 mt-2">{mfaStatus}</p>}
+                         </div>
+                       )}
                     </div>
                   </div>
                 </div>
@@ -334,7 +474,7 @@ export default function Settings() {
                   <div className="flex items-center gap-4">
                     <button 
                       onClick={() => setTheme('light')}
-                      className={`flex-1 p-6 rounded-2xl border-2 transition-all ${theme === 'light' ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-200 dark:border-white/10 hover:border-indigo-500/30'}`}
+                      className={`flex-1 p-6 rounded-2xl border-2 transition-all ${theme === 'light' ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-200 dark:border-slate-200 dark:border-white/10 hover:border-indigo-500/30'}`}
                     >
                       <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                         <div className="w-6 h-6 rounded-full bg-yellow-400" />
@@ -343,7 +483,7 @@ export default function Settings() {
                     </button>
                     <button 
                       onClick={() => setTheme('dark')}
-                      className={`flex-1 p-6 rounded-2xl border-2 transition-all ${theme === 'dark' ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-200 dark:border-white/10 hover:border-indigo-500/30'}`}
+                      className={`flex-1 p-6 rounded-2xl border-2 transition-all ${theme === 'dark' ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-200 dark:border-slate-200 dark:border-white/10 hover:border-indigo-500/30'}`}
                     >
                       <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
                         <div className="w-6 h-6 rounded-full bg-indigo-400" />
@@ -354,7 +494,7 @@ export default function Settings() {
                 </div>
               )}
 
-              <div className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5 flex justify-end">
+              <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-200 dark:border-white/5 flex justify-end">
                 <Button 
                   onClick={handleSave} 
                   isLoading={isSaving}

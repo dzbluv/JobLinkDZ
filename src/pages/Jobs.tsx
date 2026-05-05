@@ -131,7 +131,7 @@ export default function Jobs() {
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterType(null)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === null ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
                 All Vacancies
               </button>
@@ -139,7 +139,7 @@ export default function Jobs() {
                 <button 
                   key={type} 
                   onClick={() => setFilterType(type)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === type ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === type ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
                   {type}
                 </button>
@@ -154,7 +154,7 @@ export default function Jobs() {
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterSize(null)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === null ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
                 All Sizes
               </button>
@@ -162,7 +162,7 @@ export default function Jobs() {
                 <button 
                   key={size} 
                   onClick={() => setFilterSize(size)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === size ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === size ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
                   {size}
                 </button>
@@ -177,7 +177,7 @@ export default function Jobs() {
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterIndustry(null)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === null ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
                 All Industries
               </button>
@@ -185,7 +185,7 @@ export default function Jobs() {
                 <button 
                   key={industry} 
                   onClick={() => setFilterIndustry(industry)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === industry ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === industry ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
                   {industry}
                 </button>
@@ -200,7 +200,7 @@ export default function Jobs() {
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterSalary(null)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === null ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
                 All Salaries
               </button>
@@ -208,7 +208,7 @@ export default function Jobs() {
                 <button 
                   key={range} 
                   onClick={() => setFilterSalary(range)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === range ? 'bg-indigo-500 text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === range ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
                   {range}
                 </button>
@@ -223,7 +223,7 @@ export default function Jobs() {
             <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => setSelectedSkills([])}
-                className={`px-3 py-1.5 rounded-xl text-xs transition-all ${selectedSkills.length === 0 ? 'bg-indigo-500 text-white font-bold' : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 shadow-sm'}`}
+                className={`px-3 py-1.5 rounded-xl text-xs transition-all ${selectedSkills.length === 0 ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 shadow-sm'}`}
               >
                 Any Skill
               </button>
@@ -231,7 +231,7 @@ export default function Jobs() {
                 <button 
                   key={skill} 
                   onClick={() => toggleSkill(skill)}
-                  className={`px-3 py-1.5 rounded-xl text-xs transition-all ${selectedSkills.includes(skill) ? 'bg-indigo-500 text-white font-bold' : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 shadow-sm'}`}
+                  className={`px-3 py-1.5 rounded-xl text-xs transition-all ${selectedSkills.includes(skill) ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 shadow-sm'}`}
                 >
                   {skill}
                 </button>
@@ -293,7 +293,7 @@ export default function Jobs() {
                        onClick={() => {
                          setFilterType(type === 'All' ? null : type);
                        }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((type === 'All' && filterType === null) || filterType === type) ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((type === 'All' && filterType === null) || filterType === type) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
                        {type}
                      </button>
@@ -308,7 +308,7 @@ export default function Jobs() {
                        onClick={() => {
                          setFilterSize(size === 'All' ? null : size);
                        }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((size === 'All' && filterSize === null) || filterSize === size) ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((size === 'All' && filterSize === null) || filterSize === size) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
                        {size}
                      </button>
@@ -323,7 +323,7 @@ export default function Jobs() {
                        onClick={() => {
                          setFilterIndustry(industry === 'All' ? null : industry);
                        }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((industry === 'All' && filterIndustry === null) || filterIndustry === industry) ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((industry === 'All' && filterIndustry === null) || filterIndustry === industry) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
                        {industry}
                      </button>
@@ -338,7 +338,7 @@ export default function Jobs() {
                        onClick={() => {
                          setFilterSalary(range === 'All' ? null : range);
                        }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((range === 'All' && filterSalary === null) || filterSalary === range) ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((range === 'All' && filterSalary === null) || filterSalary === range) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
                        {range}
                      </button>
@@ -351,7 +351,7 @@ export default function Jobs() {
                      <button 
                        key={skill} 
                        onClick={() => toggleSkill(skill)}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedSkills.includes(skill) ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedSkills.includes(skill) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
                        {skill}
                      </button>

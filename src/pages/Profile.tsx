@@ -33,7 +33,25 @@ export default function Profile() {
   // Avatar customization state
   const [avatarInitials, setAvatarInitials] = useState(user?.avatar_initials || '');
   const [avatarColor, setAvatarColor] = useState(user?.avatar_color || getColorForName(user?.full_name || 'User'));
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
   
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Image must be less than 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const [skillInput, setSkillInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -79,6 +97,7 @@ export default function Profile() {
         skills: formData.skills.length > 0 ? formData.skills : null,
         avatar_initials: isRecruiter && avatarInitials ? avatarInitials : null,
         avatar_color: avatarColor || null,
+        avatar_url: avatarUrl || null,
       };
 
       if (!user?.id) {
@@ -139,96 +158,104 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-1 space-y-8">
-           <GlassCard className="p-8 text-center bg-white/5 border-white/10" hover={false}>
-              <div className="relative inline-block group mb-6">
-                 <Avatar 
-                   name={formData.fullName} 
-                   initials={isRecruiter && avatarInitials ? avatarInitials : undefined}
-                   color={avatarColor}
-                   size="profile"
-                   role={user?.role}
-                 />
-                 {isRecruiter && (
-                   <div className="absolute -bottom-2 -right-2 flex gap-1">
-                     <div className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-indigo-500 cursor-pointer">
-                       <Camera className="w-4 h-4" />
+           <GlassCard className="p-8 text-center bg-white dark:bg-white/5 border-slate-200 dark:border-white/10" hover={false}>
+              <div className="relative inline-block group mb-6 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                  {avatarUrl ? (
+                    <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-white/10 mx-auto relative group">
+                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative inline-block group">
+                      <Avatar 
+                        name={formData.fullName} 
+                        initials={isRecruiter && avatarInitials ? avatarInitials : undefined}
+                        color={avatarColor}
+                        size="profile"
+                        role={user?.role}
+                      />
+                      <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  )}
+               </div>
+               <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic mb-1">{formData.fullName}</h2>
+               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{user?.role} Identity</p>
+               
+               {/* Avatar Customization for Recruiters */}
+               {isRecruiter && (
+                 <div className="mb-8 p-5 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl text-left space-y-4">
+                   <div className="flex items-center gap-2 text-indigo-400">
+                     <Palette className="w-4 h-4" />
+                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Customize Avatar</span>
+                   </div>
+                   
+                   {/* Initials input */}
+                   <div>
+                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                       Custom Initials
+                     </label>
+                     <input
+                       type="text"
+                       maxLength={2}
+                       value={avatarInitials}
+                       onChange={(e) => setAvatarInitials(e.target.value.toUpperCase().slice(0, 2))}
+                       placeholder={getInitials(formData.fullName)}
+                       className="w-full px-3 py-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white font-bold text-center uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-slate-600"
+                     />
+                     <p className="text-[9px] text-slate-600 mt-1 italic">Leave empty for auto-initials</p>
+                   </div>
+                   
+                   {/* Color picker */}
+                   <div>
+                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                       Accent Color
+                     </label>
+                     <div className="flex flex-wrap gap-2">
+                       {COLOR_OPTIONS.map((colorName) => {
+                         const colorStyle = COLOR_PALETTE[colorName as keyof typeof COLOR_PALETTE];
+                         return (
+                           <button
+                             key={colorName}
+                             type="button"
+                             onClick={() => setAvatarColor(colorName)}
+                             className={cn(
+                               'w-8 h-8 rounded-xl border-2 transition-all',
+                               colorStyle.bg,
+                               colorStyle.text,
+                               'hover:scale-110',
+                               avatarColor === colorName 
+                                 ? 'border-white scale-110 shadow-lg' 
+                                 : 'border-transparent'
+                             )}
+                             title={colorName}
+                           >
+                             <span className="text-[10px] font-black">A</span>
+                           </button>
+                         );
+                       })}
                      </div>
                    </div>
-                 )}
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic mb-1">{formData.fullName}</h2>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{user?.role} Identity</p>
-              
-              {/* Avatar Customization for Recruiters */}
-              {isRecruiter && (
-                <div className="mb-8 p-5 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl text-left space-y-4">
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <Palette className="w-4 h-4" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Customize Avatar</span>
-                  </div>
-                  
-                  {/* Initials input */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                      Custom Initials
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={2}
-                      value={avatarInitials}
-                      onChange={(e) => setAvatarInitials(e.target.value.toUpperCase().slice(0, 2))}
-                      placeholder={getInitials(formData.fullName)}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white font-bold text-center uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-slate-600"
-                    />
-                    <p className="text-[9px] text-slate-600 mt-1 italic">Leave empty for auto-initials</p>
-                  </div>
-                  
-                  {/* Color picker */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                      Accent Color
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {COLOR_OPTIONS.map((colorName) => {
-                        const colorStyle = COLOR_PALETTE[colorName];
-                        return (
-                          <button
-                            key={colorName}
-                            type="button"
-                            onClick={() => setAvatarColor(colorName)}
-                            className={cn(
-                              'w-8 h-8 rounded-xl border-2 transition-all',
-                              colorStyle.bg,
-                              colorStyle.text,
-                              'hover:scale-110',
-                              avatarColor === colorName 
-                                ? 'border-white scale-110 shadow-lg' 
-                                : 'border-transparent'
-                            )}
-                            title={colorName}
-                          >
-                            <span className="text-[10px] font-black">A</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
+                 </div>
+               )}
               
               <div className="flex justify-center gap-4">
                  <a href={formData.linkedin ? `https://${formData.linkedin}` : '#'} target="_blank" rel="noopener noreferrer">
-                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-blue-400 ${!formData.linkedin ? 'opacity-30 pointer-events-none' : ''}`}>
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white dark:bg-white/5 rounded-xl hover:text-blue-400 ${!formData.linkedin ? 'opacity-30 pointer-events-none' : ''}`}>
                      <Linkedin className="w-5 h-5" />
                    </Button>
                  </a>
                  <a href={formData.githubUrl ? `https://${formData.githubUrl}` : '#'} target="_blank" rel="noopener noreferrer">
-                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-slate-900 dark:hover:text-white ${!formData.githubUrl ? 'opacity-30 pointer-events-none' : ''}`}>
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white dark:bg-white/5 rounded-xl hover:text-slate-900 dark:hover:text-slate-900 dark:text-white ${!formData.githubUrl ? 'opacity-30 pointer-events-none' : ''}`}>
                      <Github className="w-5 h-5" />
                    </Button>
                  </a>
                  <a href={formData.portfolioUrl ? `https://${formData.portfolioUrl}` : '#'} target="_blank" rel="noopener noreferrer">
-                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white/5 rounded-xl hover:text-emerald-400 ${!formData.portfolioUrl ? 'opacity-30 pointer-events-none' : ''}`}>
+                   <Button variant="ghost" size="icon" className={`text-slate-500 transition-colors bg-white dark:bg-white/5 rounded-xl hover:text-emerald-400 ${!formData.portfolioUrl ? 'opacity-30 pointer-events-none' : ''}`}>
                      <Globe className="w-5 h-5" />
                    </Button>
                  </a>
@@ -252,11 +279,11 @@ export default function Profile() {
         </div>
 
         <div className="lg:col-span-2">
-           <GlassCard className="p-10 bg-white/5 border-white/10 shadow-2xl" hover={false}>
+           <GlassCard className="p-10 bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 shadow-2xl" hover={false}>
               <form onSubmit={handleSave} className="space-y-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="md:col-span-2">
-                      <h3 className="text-xl font-bold mb-2 text-white italic flex items-center gap-2">
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
                          <User className="w-5 h-5 text-indigo-400" /> Personal Identity
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
@@ -293,14 +320,14 @@ export default function Profile() {
                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
                        placeholder="Tell us about yourself, your experience, and what you're looking for..."
                        rows={4}
-                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none"
+                       className="w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none"
                      />
                    </div>
                 </div>
 
                 <div className="space-y-6">
                    <div className="md:col-span-2">
-                      <h3 className="text-xl font-bold mb-2 text-white italic flex items-center gap-2">
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
                          <Tag className="w-5 h-5 text-indigo-400" /> Expertise & Skills
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
@@ -333,7 +360,7 @@ export default function Profile() {
                                  key={skill}
                                  type="button"
                                  onClick={() => addSkill(skill)}
-                                 className="w-full text-left px-4 py-3 hover:bg-white/5 rounded-xl text-sm text-slate-300 transition-colors flex items-center justify-between group"
+                                 className="w-full text-left px-4 py-3 hover:bg-white dark:bg-white/5 rounded-xl text-sm text-slate-300 transition-colors flex items-center justify-between group"
                                >
                                  {skill}
                                  <Plus className="w-4 h-4 text-slate-600 group-hover:text-indigo-400" />
@@ -371,7 +398,7 @@ export default function Profile() {
 
                 <div className="space-y-6">
                    <div className="md:col-span-2">
-                      <h3 className="text-xl font-bold mb-2 text-white italic flex items-center gap-2">
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
                          <Globe className="w-5 h-5 text-indigo-400" /> Links & Presence
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
