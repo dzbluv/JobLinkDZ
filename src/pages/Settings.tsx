@@ -138,7 +138,6 @@ export default function Settings() {
   const tabs = [
     { id: 'profile', label: isRecruiter ? t('Company Profile') : t('Profile'), icon: UserIcon },
     { id: 'notifications', label: t('Notifications'), icon: Bell },
-    { id: 'alerts', label: isRecruiter ? t('Candidate Alerts') : t('Job Alerts'), icon: Search },
     { id: 'security', label: t('Security'), icon: Lock },
     { id: 'appearance', label: t('Appearance'), icon: Palette },
   ];
@@ -217,97 +216,6 @@ export default function Settings() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'alerts' && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{isRecruiter ? 'Candidate Alerts' : 'Job Alerts'}</h3>
-                    <p className="text-xs text-slate-500">{isRecruiter ? 'Stay notified when new candidates match your hiring needs.' : 'Stay notified when new jobs match your interests.'}</p>
-                  </div>
-
-                  <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white italic">Create New Alert</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Keyword</label>
-                        <Input 
-                          placeholder="e.g. Developer, Designer" 
-                          value={newAlert.keyword}
-                          onChange={(e) => setNewAlert({...newAlert, keyword: e.target.value})}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Location</label>
-                        <Input 
-                          placeholder="e.g. Algiers, Remote" 
-                          value={newAlert.location}
-                          onChange={(e) => setNewAlert({...newAlert, location: e.target.value})}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Job Type</label>
-                        <select 
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all"
-                          value={newAlert.jobType}
-                          onChange={(e) => setNewAlert({...newAlert, jobType: e.target.value})}
-                        >
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="">Any Type</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Full-time">Full-time</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Part-time">Part-time</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Remote">Remote</option>
-                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="Contract">Contract</option>
-                        </select>
-                      </div>
-                    </div>
-                    <Button 
-                      className="w-full mt-2" 
-                      onClick={() => {
-                        addAlert(newAlert);
-                        setNewAlert({ keyword: '', location: '', jobType: '' });
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Alert
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white italic">Your Active Alerts</h4>
-                    {alerts.length === 0 ? (
-                      <div className="p-12 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-3xl">
-                        <Search className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                        <p className="text-xs text-slate-500 italic">No custom alerts set up yet.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-3">
-                        {alerts.map((alert) => (
-                          <div key={alert.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl group hover:border-indigo-500/30 transition-all">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                                <Bell className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                  {alert.keyword || 'All Jobs'}
-                                </p>
-                                <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500 uppercase font-bold tracking-tight">
-                                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {alert.location || 'Anywhere'}</span>
-                                  <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" /> {alert.jobType || 'Any type'}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <button 
-                              onClick={() => removeAlert(alert.id)}
-                              className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-500 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
