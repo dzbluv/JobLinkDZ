@@ -31,7 +31,8 @@ export default function AdminJobs() {
     location: '',
     salary: '',
     type: 'Full-time',
-    description: ''
+    description: '',
+    workHours: '40'
   });
 
   useEffect(() => {
@@ -91,7 +92,8 @@ export default function AdminJobs() {
         requirements: [],
         responsibilities: [],
         status: 'active',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        work_hours_per_week: parseInt(form.workHours) || 40
       };
 
       console.log('[AdminJobs] Posting job:', newJob);
@@ -103,7 +105,7 @@ export default function AdminJobs() {
          setJobs([createdJob, ...jobs]);
          checkJobAgainstAlerts(createdJob);
          setIsModalOpen(false);
-         setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '' });
+         setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
          alert('Failed to create job. Check the browser console for details.');
       }
@@ -409,6 +411,13 @@ export default function AdminJobs() {
                          <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Contract">Contract</option>
                       </select>
                     </div>
+                    <Input 
+                      label="Work Hours / Week" 
+                      placeholder="e.g. 40" 
+                      type="number"
+                      value={form.workHours}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, workHours: e.target.value})}
+                    />
                     <div className="col-span-2 space-y-1">
                        <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Description</label>
                        <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." value={form.description || ''} onChange={(e) => setForm({...form, description: e.target.value})} />

@@ -87,7 +87,9 @@ export default function JobDetails() {
               </p>
             </div>
 
+            {(job.requirements?.length > 0 || job.responsibilities?.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+               {job.requirements?.length > 0 && (
                <div>
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-white italic">
                      <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Requirements
@@ -101,6 +103,8 @@ export default function JobDetails() {
                      ))}
                   </ul>
                </div>
+               )}
+               {job.responsibilities?.length > 0 && (
                <div>
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-white italic">
                      <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Responsibilities
@@ -114,8 +118,11 @@ export default function JobDetails() {
                      ))}
                   </ul>
                </div>
+               )}
             </div>
+            )}
 
+            {job.skills?.length > 0 && (
             <div>
                <h3 className="text-lg font-bold mb-4">Required Skills</h3>
                <div className="flex flex-wrap gap-3">
@@ -126,6 +133,7 @@ export default function JobDetails() {
                   ))}
                </div>
             </div>
+            )}
           </GlassCard>
 
           <div className="flex flex-col md:flex-row items-center gap-6 p-8 glass rounded-3xl border border-warning/20 bg-warning/5">
@@ -148,7 +156,7 @@ export default function JobDetails() {
                    { label: 'Job Type', value: job.job_type, icon: Briefcase, color: 'text-indigo-400' },
                    { label: 'Salary', value: job.salary_range, icon: Coins, color: 'text-indigo-400' },
                    { label: 'Hiring Status', value: job.status.toUpperCase(), icon: Calendar, color: 'text-indigo-400' },
-                   { label: 'Working Hours', value: '40 hours / week', icon: Clock, color: 'text-indigo-400' },
+                   { label: 'Working Hours', value: `${job.work_hours_per_week || 40} hours / week`, icon: Clock, color: 'text-indigo-400' },
                  ].map((item, i) => (
                    <div key={i} className="flex gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-center flex-shrink-0">

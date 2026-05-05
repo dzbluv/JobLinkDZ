@@ -14,6 +14,7 @@ export interface JobOffer {
   status: 'active' | 'closed';
   skills: string[];
   owner_id?: string;
+  work_hours_per_week?: number;
 }
 
 export const mockJobs: JobOffer[] = [
