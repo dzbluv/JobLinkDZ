@@ -4,7 +4,7 @@ import {
   Eye, Download, MoreHorizontal, User, Mail, ChevronDown, X, FileText, ExternalLink,
   ArrowUpDown, ArrowUp, ArrowDown, Loader2
 } from 'lucide-react';
-import type { Application } from '../data/mockApplications';
+import { type Application, getAppCandidateName, getAppJobTitle, getAppCompanyName } from '../data/mockApplications';
 import { applicationsAPI } from '../services/api';
 import { GlassCard, Badge, Input } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
@@ -35,8 +35,8 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
               <User className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">{app.candidate_name}</h2>
-              <p className="text-sm text-slate-500 font-medium">Application for <span className="text-indigo-400">{app.job_title}</span></p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">{getAppCandidateName(app)}</h2>
+              <p className="text-sm text-slate-500 font-medium">Application for <span className="text-indigo-400">{getAppJobTitle(app)}</span></p>
             </div>
           </div>
           <button 
@@ -55,7 +55,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
                   <Mail className="w-3.5 h-3.5" /> Cover Message
                 </h3>
                 <div className="p-6 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                  {app.cover_message}
+                  {app.cover_letter || 'No cover letter provided.'}
                 </div>
               </section>
 
@@ -67,7 +67,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
                   <div className="bg-slate-50 dark:bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between">
                      <div className="flex items-center gap-3">
                         <FileText className="w-4 h-4 text-indigo-400" />
-                        <span className="text-xs font-bold text-slate-900 dark:text-white italic">{app.cv_url}</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white italic">{app.resume_url || 'No file'}</span>
                      </div>
                      <div className="flex gap-2">
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-slate-900 dark:text-white">
@@ -82,7 +82,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
                   <div className="aspect-[1/1.4] w-full bg-white p-8 md:p-12 text-slate-900 overflow-y-auto selection:bg-indigo-100 italic">
                     <div className="space-y-6">
                       <div className="border-b-2 border-indigo-600 pb-4">
-                        <h1 className="text-3xl font-black uppercase tracking-tighter">{app.candidate_name}</h1>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter">{getAppCandidateName(app)}</h1>
                         <p className="text-indigo-600 font-bold uppercase tracking-widest text-[10px] mt-1">Full-stack Developer & UI Specialist</p>
                       </div>
 
@@ -142,7 +142,7 @@ function ApplicationDetailsModal({ app, onClose, onStatusChange }: { app: Applic
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Job ID</p>
-                    <p className="text-sm font-mono text-indigo-400">#{app.job_offer_id}</p>
+                    <p className="text-sm font-mono text-indigo-400">#{app.job_id}</p>
                   </div>
                 </div>
               </section>
@@ -209,9 +209,9 @@ export default function AdminApplications() {
   const filteredAndSortedApps = useMemo(() => {
     return apps
       .filter(app => 
-        (app.candidate_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        app.job_title.toLowerCase().includes(search.toLowerCase()) ||
-        app.company_name.toLowerCase().includes(search.toLowerCase())
+        (getAppCandidateName(app).toLowerCase()).includes(search.toLowerCase()) ||
+        getAppJobTitle(app).toLowerCase().includes(search.toLowerCase()) ||
+        getAppCompanyName(app).toLowerCase().includes(search.toLowerCase())
       )
       .sort((a, b) => {
         const dateA = new Date(a.created_at).getTime();
@@ -233,9 +233,9 @@ export default function AdminApplications() {
       const updatedApps = apps.map(app => {
         if (app.id === id) {
           addNotification({
-            userId: app.candidate_id,
+            userId: app.user_id,
             title: 'Application Status Updated',
-            message: `Your application for ${app.job_title} at ${app.company_name} has been updated to ${newStatus.toUpperCase()}.`,
+            message: `Your application for ${getAppJobTitle(app)} at ${getAppCompanyName(app)} has been updated to ${newStatus.toUpperCase()}.`,
             type: 'status_change',
             meta: { applicationId: app.id, status: newStatus }
           });
@@ -327,18 +327,18 @@ export default function AdminApplications() {
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full flex items-center justify-center">
-                             <Avatar name={app.candidate_name || 'Candidate'} size="sm" />
+                             <Avatar name={getAppCandidateName(app)} size="sm" />
                           </div>
                           <div>
-                             <p className="font-bold text-sm">{app.candidate_name || 'John Candidate'}</p>
-                             <p className="text-[10px] text-slate-500">{app.candidate_name?.toLowerCase().replace(/\s+/g, '.')}@joblinkdz.com</p>
+                             <p className="font-bold text-sm">{getAppCandidateName(app)}</p>
+                             <p className="text-[10px] text-slate-500">{getAppCandidateName(app).toLowerCase().replace(/\s+/g, '.')}@joblinkdz.com</p>
                           </div>
                        </div>
                     </td>
                     <td className="px-6 py-4">
                        <div>
-                          <p className="text-sm font-bold truncate max-w-[200px]">{app.job_title}</p>
-                          <p className="text-[10px] text-slate-500">{app.company_name}</p>
+                          <p className="text-sm font-bold truncate max-w-[200px]">{getAppJobTitle(app)}</p>
+                          <p className="text-[10px] text-slate-500">{getAppCompanyName(app)}</p>
                        </div>
                     </td>
                     <td className="px-6 py-4">

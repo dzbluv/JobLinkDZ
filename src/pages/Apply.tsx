@@ -79,16 +79,12 @@ export default function Apply() {
     
     try {
       await applicationsAPI.create({
-        candidate_id: user.id,
-        candidate_name: user.full_name || 'Anonymous candidate',
-        job_offer_id: job.id,
+        user_id: user.id,
+        job_id: job.id,
         status: 'pending',
-        cv_url: selectedFile.name, // Pseudo url
-        cover_message: message,
-        job_title: job.title,
-        company_name: job.company,
-        company_id: job.company_id,
-        created_at: new Date().toISOString()
+        resume_url: selectedFile.name, // TODO: upload to Supabase Storage and use returned URL
+        cover_letter: message,
+        applied_at: new Date().toISOString(),
       });
 
       addNotification({
@@ -163,8 +159,8 @@ export default function Apply() {
                    <FileUpload onFileSelect={setSelectedFile} />
                    {/* 
                      NOTE FOR SUPABASE INTEGRATION:
-                     1. Use supabase-js storage API: supabase.storage.from('cvs').upload(...)
-                     2. Then insert a record into 'applications' table with candidate_id, job_offer_id, and the returned cv_url.
+                      1. Use supabase-js storage API: supabase.storage.from('cvs').upload(...)
+                      2. Then insert a record into 'applications' table with user_id, job_id, and the returned resume_url.
                    */}
                 </div>
 

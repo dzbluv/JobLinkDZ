@@ -30,7 +30,8 @@ export default function AdminJobs() {
     company: '',
     location: '',
     salary: '',
-    type: 'Full-time'
+    type: 'Full-time',
+    description: ''
   });
 
   useEffect(() => {
@@ -74,8 +75,8 @@ export default function AdminJobs() {
       company_id: companyId,
       location: form.location,
       job_type: form.type as any,
-      salary_range: form.salary,
-      description: '...',
+      salary_range: form.salary || 'Competitive',
+      description: form.description || 'No description provided.',
       skills: [],
       requirements: [],
       responsibilities: [],
@@ -89,7 +90,7 @@ export default function AdminJobs() {
        setJobs([createdJob, ...jobs]);
        checkJobAgainstAlerts(createdJob);
        setIsModalOpen(false);
-       setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time' });
+       setForm({ title: '', company: '', location: '', salary: '', type: 'Full-time', description: '' });
     }
     setIsPosting(false);
   };
@@ -356,7 +357,7 @@ export default function AdminJobs() {
                     </div>
                     <div className="col-span-2 space-y-1">
                        <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Description</label>
-                       <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." />
+                       <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." value={form.description || ''} onChange={(e) => setForm({...form, description: e.target.value})} />
                     </div>
                     <div className="col-span-2 pt-6">
                        <Button type="submit" className="w-full h-14 text-lg" isLoading={isPosting}>
