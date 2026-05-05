@@ -67,9 +67,8 @@ export default function Profile() {
     setError(null);
 
     try {
-      // Build the payload for the backend
+      // Build the payload
       const payload: Record<string, any> = {
-        userId: user?.id,
         full_name: formData.fullName,
         phone: formData.phone || null,
         location: formData.location || null,
@@ -82,51 +81,19 @@ export default function Profile() {
         avatar_color: avatarColor || null,
       };
 
-      // Try server-side API first (through Vite proxy to Express)
-      try {
-        const resp = await fetch('/api/users/profile', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (resp.ok) {
-          await refreshUser();
-          setIsSaving(false);
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 3000);
-          return;
-        }
-        
-        const errorData = await resp.json().catch(() => ({}));
-        console.warn('Server update failed, falling back to Supabase client:', errorData);
-      } catch (serverErr) {
-        console.warn('Server API unavailable, falling back to client-side update:', serverErr);
-      }
-
-      // Fallback: Update directly via Supabase client
       if (!user?.id) {
         throw new Error('User not authenticated');
       }
 
+      // Update directly via Supabase client
       const { error: updateError } = await supabase
         .from('users')
-        .update({
-          full_name: payload.full_name,
-          phone: payload.phone,
-          location: payload.location,
-          bio: payload.bio,
-          github_url: payload.github_url,
-          portfolio_url: payload.portfolio_url,
-          linkedin_url: payload.linkedin_url,
-          skills: payload.skills,
-          avatar_initials: payload.avatar_initials,
-          avatar_color: payload.avatar_color,
-        })
+        .update(payload)
         .eq('id', user.id);
 
       if (updateError) throw updateError;
 
+      // Refresh user context to get updated data
       await refreshUser();
       
       setIsSaving(false);
