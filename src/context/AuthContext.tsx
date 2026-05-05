@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('*')
+          .select('id, full_name, email, role, phone, location')
           .eq('id', sessionUser.id)
           .single();
 
@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error fetching user:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       const userId = data.user?.id;
       if (!userId) return null;
-      const { data: profile, error: profileError } = await supabase.from('users').select('*').eq('id', userId).single();
+      const { data: profile, error: profileError } = await supabase.from('users').select('id, full_name, email, role, phone, location').eq('id', userId).single();
       if (profileError || !profile) {
         const defaultProfile = { id: userId, full_name: 'Anonymous', email, role: 'candidate' } as User;
         await supabase.from('users').insert(defaultProfile).select();
@@ -176,13 +177,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         return;
       }
+      // Only select columns we know exist, to avoid schema errors
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('id, full_name, email, role, phone, location')
         .eq('id', session.user.id)
         .single();
       if (data && !error) {
-        setUser(data as User);
+        // Merge with existing user data to preserve any extra fields
+        setUser(prev => prev ? { ...data as User, ...prev } : data as User);
+      } else {
+        // If the basic query fails, keep the existing user state
+        console.warn('refreshUser could not fetch profile:', error?.message);
       }
     } catch (error) {
       console.error('Error refreshing user:', error);
