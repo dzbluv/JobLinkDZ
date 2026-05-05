@@ -185,7 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
       if (data && !error) {
         // Merge with existing user data to preserve any extra fields
-        setUser(prev => prev ? { ...data as User, ...prev } : data as User);
+        // data comes second so new values override old ones
+        setUser(prev => prev ? { ...prev, ...data as User } : data as User);
       } else {
         // If the basic query fails, keep the existing user state
         console.warn('refreshUser could not fetch profile:', error?.message);
