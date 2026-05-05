@@ -55,19 +55,19 @@ export default function Landing() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <Badge variant="info">Recruitment Reinvented</Badge>
+          <Badge variant="info">{t('landing.badge_reinvented')}</Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mt-6 mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
-            {t('hero.title')}
+            {t('landing.hero_title')}
           </h1>
           <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
-            {t('hero.subtitle')}
+            {t('landing.hero_subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <Link to="/jobs">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-10">Browse All Jobs</Button>
+              <Button size="lg" className="w-full sm:w-auto h-14 px-10">{t('landing.browse_all_jobs')}</Button>
             </Link>
             <Link to="/register">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-10">Get Started</Button>
+              <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-10">{t('landing.get_started')}</Button>
             </Link>
           </div>
           
@@ -75,7 +75,7 @@ export default function Landing() {
             <div className="flex -space-x-3">
               {[1,2,3,4].map(i => <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-slate-200 dark:bg-slate-800" />)}
             </div>
-            <p className="text-sm font-medium">Joined by <span className="font-bold underline decoration-primary decoration-2 underline-offset-2">5,000+</span> professionals this month</p>
+            <p className="text-sm font-medium">{t('landing.joined_by')} <span className="font-bold underline decoration-primary decoration-2 underline-offset-2">5,000+</span> {t('landing.professionals_this_month')}</p>
           </div>
         </motion.div>
 
@@ -98,8 +98,8 @@ export default function Landing() {
                <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Application Status</p>
-              <p className="font-bold">Successfully Offered!</p>
+              <p className="text-xs text-slate-500">{t('landing.application_status')}</p>
+              <p className="font-bold">{t('landing.successfully_offered')}</p>
             </div>
           </GlassCard>
 
@@ -108,8 +108,8 @@ export default function Landing() {
                <TrendingUp className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Market Value</p>
-              <p className="font-bold">+15% Salary Increase</p>
+              <p className="text-xs text-slate-500">{t('landing.market_value')}</p>
+              <p className="font-bold">{t('landing.salary_increase')}</p>
             </div>
           </GlassCard>
         </motion.div>
@@ -120,10 +120,10 @@ export default function Landing() {
       <section className="px-8 py-20 bg-primary/5 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
            {[
-             { label: 'Active Jobs', value: '2,500+', icon: Briefcase },
-             { label: 'Companies', value: '450+', icon: Globe },
-             { label: 'Total Candidates', value: '12,000+', icon: Users },
-             { label: 'Successful Placements', value: '3,200+', icon: star }
+             { label: t('landing.active_jobs'), value: '2,500+', icon: Briefcase },
+             { label: t('landing.companies'), value: '450+', icon: Globe },
+             { label: t('landing.total_candidates'), value: '12,000+', icon: Users },
+             { label: t('landing.successful_placements'), value: '3,200+', icon: star }
            ].map((stat, i) => (
              <div key={i} className="text-center group">
                <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -141,12 +141,12 @@ export default function Landing() {
       <section className="px-8 py-24 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div>
-            <Badge>Featured Jobs</Badge>
-            <h2 className="text-4xl font-bold mt-4">Discover the hottest opportunities</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-2">Personalized job recommendations just for you</p>
+            <Badge>{t('landing.featured_jobs')}</Badge>
+            <h2 className="text-4xl font-bold mt-4">{t('landing.discover_hottest')}</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">{t('landing.personalized_recs')}</p>
           </div>
           <Link to="/jobs">
-            <Button variant="ghost" className="gap-2 group">View All Jobs <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></Button>
+            <Button variant="ghost" className="gap-2 group">{t('landing.view_all_jobs')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></Button>
           </Link>
         </div>
 
@@ -170,37 +170,37 @@ export default function Landing() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="relative">
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/20 blur-3xl rounded-full" />
-             <div className="grid grid-cols-2 gap-4 relative z-10">
+              <div className="grid grid-cols-2 gap-4 relative z-10">
                 <GlassCard className="aspect-square flex flex-col items-center justify-center text-center p-8">
                    <ShieldCheck className="w-12 h-12 text-primary mb-4" />
-                   <h4 className="font-bold">Verified Jobs</h4>
-                   <p className="text-xs text-slate-500 mt-2">Every listing is manually verified by our team.</p>
+                   <h4 className="font-bold">{t('landing.verified_jobs')}</h4>
+                   <p className="text-xs text-slate-500 mt-2">{t('landing.verified_jobs_desc')}</p>
                 </GlassCard>
                 <GlassCard className="aspect-square flex flex-col items-center justify-center text-center p-8 mt-12">
                    <Users className="w-12 h-12 text-accent mb-4" />
-                   <h4 className="font-bold">Direct Connection</h4>
-                   <p className="text-xs text-slate-500 mt-2">Chat directly with hiring managers.</p>
+                   <h4 className="font-bold">{t('landing.direct_connection')}</h4>
+                   <p className="text-xs text-slate-500 mt-2">{t('landing.direct_connection_desc')}</p>
                 </GlassCard>
                 <GlassCard className="aspect-square flex flex-col items-center justify-center text-center p-8 -mt-6">
                    <Briefcase className="w-12 h-12 text-black dark:text-white mb-4" />
-                   <h4 className="font-bold">Career Growth</h4>
-                   <p className="text-xs text-slate-500 mt-2">Access exclusive workshops and webinars.</p>
+                   <h4 className="font-bold">{t('landing.career_growth')}</h4>
+                   <p className="text-xs text-slate-500 mt-2">{t('landing.career_growth_desc')}</p>
                 </GlassCard>
                 <GlassCard className="aspect-square flex flex-col items-center justify-center text-center p-8 mt-6">
                    <Star className="w-12 h-12 text-secondary mb-4" />
-                   <h4 className="font-bold">Premium Roles</h4>
-                   <p className="text-xs text-slate-500 mt-2">Discover hand-picked opportunities from top employers.</p>
+                   <h4 className="font-bold">{t('landing.premium_roles')}</h4>
+                   <p className="text-xs text-slate-500 mt-2">{t('landing.premium_roles_desc')}</p>
                 </GlassCard>
              </div>
           </div>
           <div>
-            <Badge variant="success">Why Choose Us?</Badge>
-            <h2 className="text-4xl font-bold mt-4 mb-8 leading-tight">Elevate your career with tools designed for high-performers</h2>
+            <Badge variant="success">{t('landing.why_choose_us')}</Badge>
+            <h2 className="text-4xl font-bold mt-4 mb-8 leading-tight">{t('landing.elevate_career')}</h2>
             <div className="space-y-6">
                {[
-                 { title: 'Digital CV Builder', desc: 'Create a professional CV in minutes using our responsive builder tool.' },
-                 { title: 'Real-time Analytics', desc: 'See who viewed your profile and how you compare to other candidates.' },
-                 { title: 'Global Opportunities', desc: 'Reach companies worldwide from the comfort of your home.' }
+                 { title: t('landing.cv_builder'), desc: t('landing.cv_builder_desc') },
+                 { title: t('landing.realtime_analytics'), desc: t('landing.realtime_analytics_desc') },
+                 { title: t('landing.global_opportunities'), desc: t('landing.global_opportunities_desc') }
                ].map((item, i) => (
                  <div key={i} className="flex gap-4">
                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-1">
@@ -214,7 +214,7 @@ export default function Landing() {
                ))}
             </div>
             <Link to="/register" className="inline-block mt-12">
-              <Button size="lg" className="rounded-full shadow-2xl">Start journey for free <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              <Button size="lg" className="rounded-full shadow-2xl">{t('landing.start_journey_free')} <ArrowRight className="w-4 h-4 ml-2" /></Button>
             </Link>
           </div>
         </div>

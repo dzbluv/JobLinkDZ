@@ -38,31 +38,31 @@ export default function Settings() {
   
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword) {
-      setPasswordStatus('Please enter both passwords.');
+      setPasswordStatus(t('settings_page.password_status.enter_both'));
       return;
     }
     if (!user?.email) return;
 
     try {
-      setPasswordStatus('Verifying...');
+      setPasswordStatus(t('settings_page.password_status.verifying'));
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: currentPassword
       });
 
       if (signInError) {
-        setPasswordStatus('Incorrect current password.');
+        setPasswordStatus(t('settings_page.password_status.incorrect'));
         return;
       }
 
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       
-      setPasswordStatus('Password updated successfully!');
+      setPasswordStatus(t('settings_page.password_status.success'));
       setCurrentPassword('');
       setNewPassword('');
     } catch (err: any) {
-      setPasswordStatus(err.message || 'Error updating password.');
+      setPasswordStatus(err.message || t('settings_page.password_status.error'));
     }
   };
 
@@ -85,21 +85,21 @@ export default function Settings() {
 
   const handleEnableMfa = async () => {
     try {
-      setMfaStatus('Loading...');
+      setMfaStatus(t('common.loading'));
       const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
       if (error) throw error;
       setMfaFactorId(data.id);
       setMfaQrCode(data.totp.qr_code);
-      setMfaStatus('Scan the QR code and enter the 6-digit code.');
+      setMfaStatus(t('settings_page.mfa.step_1'));
     } catch (err: any) {
-      setMfaStatus(err.message || 'Error enabling MFA');
+      setMfaStatus(err.message || t('settings_page.password_status.error'));
     }
   };
 
   const handleVerifyMfa = async () => {
     if (!mfaFactorId || !mfaCode) return;
     try {
-      setMfaStatus('Verifying...');
+      setMfaStatus(t('settings_page.password_status.verifying'));
       const challenge = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
       if (challenge.error) throw challenge.error;
 
@@ -113,9 +113,9 @@ export default function Settings() {
       setIsMfaEnabled(true);
       setMfaFactorId(null);
       setMfaQrCode(null);
-      setMfaStatus('Two-Factor Authentication is now enabled!');
+      setMfaStatus(t('settings_page.mfa.enabled_status'));
     } catch (err: any) {
-      setMfaStatus(err.message || 'Invalid code. Try again.');
+      setMfaStatus(err.message || t('settings_page.mfa.invalid_code'));
     }
   };
 
@@ -123,7 +123,7 @@ export default function Settings() {
 
   const handleDeleteAccount = async () => {
     if (!user?.id) return;
-    if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) return;
+    if (!confirm(t('settings_page.delete_confirm'))) return;
     
     setIsDeleting(true);
     try {
@@ -131,12 +131,12 @@ export default function Settings() {
       const response = await fetch(`http://localhost:4000/api/admin/delete-user/${user.id}`, {
         method: 'DELETE'
       });
-      if (!response.ok) throw new Error('Failed to delete account');
+      if (!response.ok) throw new Error(t('settings_page.delete_error'));
       await supabase.auth.signOut();
       window.location.href = '/'; // force reload to clear states
     } catch (err) {
       console.error(err);
-      alert('Error deleting account from database. Please try again.');
+      alert(t('settings_page.delete_error'));
     } finally {
       setIsDeleting(false);
     }
@@ -188,10 +188,10 @@ export default function Settings() {
   };
   
   const tabs = [
-    { id: 'profile', label: isRecruiter ? t('Company Profile') : t('Profile'), icon: UserIcon },
-    { id: 'notifications', label: t('Notifications'), icon: Bell },
-    { id: 'security', label: t('Security'), icon: Lock },
-    { id: 'appearance', label: t('Appearance'), icon: Palette },
+    { id: 'profile', label: isRecruiter ? t('settings_page.tabs.company_profile') : t('settings_page.tabs.profile'), icon: UserIcon },
+    { id: 'notifications', label: t('settings_page.tabs.notifications'), icon: Bell },
+    { id: 'security', label: t('settings_page.tabs.security'), icon: Lock },
+    { id: 'appearance', label: t('settings_page.tabs.appearance'), icon: Palette },
   ];
 
   return (
@@ -202,8 +202,8 @@ export default function Settings() {
 
       <div className="max-w-5xl mx-auto relative z-10">
         <header className="mb-10">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 italic">{t('Settings')}</h1>
-          <p className="text-slate-500">{t('Manage your account preferences and security settings.')}</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 italic">{t('settings_page.title')}</h1>
+          <p className="text-slate-500">{t('settings_page.subtitle')}</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -231,7 +231,7 @@ export default function Settings() {
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-500/5 transition-all font-medium text-sm"
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                {isDeleting ? 'Deleting...' : 'Delete Account'}
+                {isDeleting ? t('settings_page.deleting') : t('settings_page.delete_account')}
               </button>
             </div>
           </aside>
@@ -242,16 +242,16 @@ export default function Settings() {
               {activeTab === 'notifications' && (
                 <div className="space-y-8">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Email Notifications</h3>
-                    <p className="text-xs text-slate-500">Choose when you want to be notified via email.</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t('settings_page.email_notifications')}</h3>
+                    <p className="text-xs text-slate-500">{t('settings_page.notifications_desc')}</p>
                   </div>
 
                   <div className="space-y-6">
                     {[
-                      { id: 'jobs', label: isRecruiter ? 'New candidate recommendations' : 'New job recommendations', desc: isRecruiter ? 'Get updates when new candidates matching your job posts are found.' : 'Get updates when new jobs matching your profile are posted.' },
-                      { id: 'status', label: isRecruiter ? 'New job applications' : 'Application status updates', desc: isRecruiter ? 'Be notified when a candidate applies to your job listings.' : 'Be notified when an employer updates the status of your application.' },
-                      { id: 'tips', label: 'Recruitment tips & news', desc: 'Receive monthly newsletter with career advice and hiring trends.' },
-                      { id: 'security', label: 'Security alerts', desc: 'Notifications about your account security and login attempts.' }
+                      { id: 'jobs', label: isRecruiter ? t('settings_page.new_candidate_recs') : t('settings_page.new_job_recs'), desc: isRecruiter ? t('settings_page.recruiter_recs_desc') : t('settings_page.candidate_recs_desc') },
+                      { id: 'status', label: isRecruiter ? t('settings_page.new_job_apps') : t('settings_page.app_status_updates'), desc: isRecruiter ? t('settings_page.recruiter_apps_desc') : t('settings_page.candidate_apps_desc') },
+                      { id: 'tips', label: t('settings_page.recruitment_tips'), desc: t('settings_page.tips_desc') },
+                      { id: 'security', label: t('settings_page.security_alerts'), desc: t('settings_page.security_alerts_desc') }
                     ].map((item) => (
                       <div key={item.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                         <div className="flex-1">
@@ -270,18 +270,18 @@ export default function Settings() {
               {activeTab === 'profile' && (
                 <div className="space-y-8">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Profile Visibility</h3>
-                    <p className="text-xs text-slate-500">Manage who can see your profile and activity.</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t('settings_page.profile_visibility')}</h3>
+                    <p className="text-xs text-slate-500">{t('settings_page.visibility_desc')}</p>
                   </div>
 
                   <div className="space-y-6">
                     <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex items-center justify-between">
                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Public Profile</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{t('settings_page.public_profile')}</p>
                           <p className="text-[10px] text-slate-500">
                             {isPublic 
-                              ? (isRecruiter ? 'Other companies and candidates can find your company profile.' : 'Recruiters can find your profile in search results.') 
-                              : (isRecruiter ? 'Your company profile is hidden from search results.' : 'Your profile is hidden from search results and only visible to you.')}
+                              ? (isRecruiter ? t('settings_page.visibility_on_recruiter') : t('settings_page.visibility_on_candidate')) 
+                              : (isRecruiter ? t('settings_page.visibility_off_recruiter') : t('settings_page.visibility_off_candidate'))}
                           </p>
                        </div>
                        <div 
@@ -300,7 +300,7 @@ export default function Settings() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <div className="space-y-2">
-                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Language</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('settings_page.language')}</label>
                           <select 
                               className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all"
                               value={i18n.language}
@@ -317,10 +317,10 @@ export default function Settings() {
                           </select>
                        </div>
                        <div className="space-y-2">
-                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Timezone</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('settings_page.timezone')}</label>
                           <select className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all">
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="dz">Algiers (GMT+1)</option>
-                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="utc">UTC / GMT</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="dz">{t('settings_page.algiers_gmt')}</option>
+                             <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-900 dark:text-white" value="utc">{t('settings_page.utc_gmt')}</option>
                           </select>
                        </div>
                     </div>
@@ -331,19 +331,19 @@ export default function Settings() {
               {activeTab === 'security' && (
                 <div className="space-y-8">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Security Settings</h3>
-                    <p className="text-xs text-slate-500">Protect your account with advanced security features.</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t('settings_page.security_settings')}</h3>
+                    <p className="text-xs text-slate-500">{t('settings_page.security_desc')}</p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('Current Password')}</label>
+                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('settings_page.current_password_label')}</label>
                       <div className="relative">
                         <input 
                           type={showCurrentPassword ? 'text' : 'password'} 
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Enter current password"
+                          placeholder={t('settings_page.current_password_placeholder')}
                           className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all pr-10" 
                         />
                         <button 
@@ -357,14 +357,14 @@ export default function Settings() {
                     </div>
 
                     <div className="space-y-2 mt-4">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('New Password')}</label>
+                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">{t('settings_page.new_password_label')}</label>
                       <div className="relative flex items-center gap-2">
                         <div className="relative flex-1">
                           <input 
                             type={showNewPassword ? 'text' : 'password'} 
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="Enter new password"
+                            placeholder={t('settings_page.new_password_placeholder')}
                             className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all pr-10" 
                           />
                           <button 
@@ -375,7 +375,7 @@ export default function Settings() {
                             {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
-                        <Button variant="outline" size="sm" onClick={handleChangePassword}>{t('Change Password')}</Button>
+                        <Button variant="outline" size="sm" onClick={handleChangePassword}>{t('settings_page.change_password_button')}</Button>
                       </div>
                       {passwordStatus && <p className="text-xs font-bold text-indigo-500 px-2 mt-1">{passwordStatus}</p>}
                     </div>
@@ -385,38 +385,38 @@ export default function Settings() {
                          <div className="flex items-center gap-3">
                             <Shield className="w-8 h-8 text-indigo-400" />
                             <div>
-                               <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Two-Factor Authentication</p>
-                               <p className="text-[10px] text-slate-500">{isMfaEnabled ? 'Your account is secured with 2FA.' : 'Add an extra layer of security to your account.'}</p>
+                               <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tighter">{t('settings_page.mfa.title')}</p>
+                               <p className="text-[10px] text-slate-500">{isMfaEnabled ? t('settings_page.mfa.enabled_desc') : t('settings_page.mfa.disabled_desc')}</p>
                             </div>
                          </div>
                          {!isMfaEnabled && !mfaFactorId && (
-                           <Button size="sm" onClick={handleEnableMfa}>Enable</Button>
+                           <Button size="sm" onClick={handleEnableMfa}>{t('settings_page.mfa.enable_button')}</Button>
                          )}
                          {isMfaEnabled && (
-                           <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Enabled</span>
+                           <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">{t('settings_page.mfa.status_enabled')}</span>
                          )}
                        </div>
 
-                       {mfaFactorId && !isMfaEnabled && (
-                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-white/10 mt-2">
-                           <p className="text-sm text-slate-900 dark:text-white mb-4">1. Scan this QR code with your authenticator app (e.g., Google Authenticator, Authy).</p>
-                           {mfaQrCode && (
-                             <div className="bg-white p-2 rounded-lg inline-block mb-4" dangerouslySetInnerHTML={{ __html: mfaQrCode }} />
-                           )}
-                           <p className="text-sm text-slate-900 dark:text-white mb-2">2. Enter the 6-digit code from the app:</p>
-                           <div className="flex gap-2">
-                             <input 
-                               type="text" 
-                               value={mfaCode}
-                               onChange={(e) => setMfaCode(e.target.value)}
-                               placeholder="000000"
-                               className="w-32 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all text-center tracking-widest font-mono"
-                             />
-                             <Button size="sm" onClick={handleVerifyMfa}>Verify</Button>
-                           </div>
-                           {mfaStatus && <p className="text-xs font-bold text-indigo-500 mt-2">{mfaStatus}</p>}
-                         </div>
-                       )}
+                        {mfaFactorId && !isMfaEnabled && (
+                          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-white/10 mt-2">
+                            <p className="text-sm text-slate-900 dark:text-white mb-4">{t('settings_page.mfa.step_1')}</p>
+                            {mfaQrCode && (
+                              <div className="bg-white p-2 rounded-lg inline-block mb-4" dangerouslySetInnerHTML={{ __html: mfaQrCode }} />
+                            )}
+                            <p className="text-sm text-slate-900 dark:text-white mb-2">{t('settings_page.mfa.step_2')}</p>
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={mfaCode}
+                                onChange={(e) => setMfaCode(e.target.value)}
+                                placeholder="000000"
+                                className="w-32 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-all text-center tracking-widest font-mono"
+                              />
+                              <Button size="sm" onClick={handleVerifyMfa}>{t('settings_page.mfa.verify_button')}</Button>
+                            </div>
+                            {mfaStatus && <p className="text-xs font-bold text-indigo-500 mt-2">{mfaStatus}</p>}
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -425,8 +425,8 @@ export default function Settings() {
               {activeTab === 'appearance' && (
                 <div className="space-y-8">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t('Theme')}</h3>
-                    <p className="text-xs text-slate-500">Customize the look and feel of JobLinkDZ.</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t('settings_page.theme_label')}</h3>
+                    <p className="text-xs text-slate-500">{t('settings_page.appearance_desc')}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <button 
@@ -436,7 +436,7 @@ export default function Settings() {
                       <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                         <div className="w-6 h-6 rounded-full bg-yellow-400" />
                       </div>
-                      <p className="font-bold text-center text-slate-900 dark:text-white">{t('Light')}</p>
+                      <p className="font-bold text-center text-slate-900 dark:text-white">{t('settings_page.light_theme')}</p>
                     </button>
                     <button 
                       onClick={() => setTheme('dark')}
@@ -445,7 +445,7 @@ export default function Settings() {
                       <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
                         <div className="w-6 h-6 rounded-full bg-indigo-400" />
                       </div>
-                      <p className="font-bold text-center text-slate-900 dark:text-white">{t('Dark')}</p>
+                      <p className="font-bold text-center text-slate-900 dark:text-white">{t('settings_page.dark_theme')}</p>
                     </button>
                   </div>
                 </div>
@@ -458,7 +458,7 @@ export default function Settings() {
                   className="px-10"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {t('settings_page.save_changes')}
                 </Button>
               </div>
             </GlassCard>

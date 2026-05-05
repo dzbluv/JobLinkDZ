@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft, ShieldCheck, AlertTriangle, X, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -13,22 +14,16 @@ interface PasswordRule {
   test: (pw: string) => boolean;
 }
 
-const PASSWORD_RULES: PasswordRule[] = [
-  { label: 'At least 6 characters', test: (pw) => pw.length >= 6 },
-  { label: 'Contains a number', test: (pw) => /\d/.test(pw) },
-  { label: 'Contains uppercase letter', test: (pw) => /[A-Z]/.test(pw) },
-  { label: 'Contains special character', test: (pw) => /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(pw) },
-];
-
-function getStrengthLevel(score: number): { label: string; color: string; barColor: string } {
-  if (score <= 1) return { label: 'Weak', color: 'text-rose-500', barColor: 'bg-rose-500' };
-  if (score <= 2) return { label: 'Fair', color: 'text-amber-500', barColor: 'bg-amber-500' };
-  if (score <= 3) return { label: 'Good', color: 'text-blue-500', barColor: 'bg-blue-500' };
-  return { label: 'Strong', color: 'text-emerald-500', barColor: 'bg-emerald-500' };
+function getStrengthLevel(score: number, t: any): { label: string; color: string; barColor: string } {
+  if (score <= 1) return { label: t('auth.strength.weak'), color: 'text-rose-500', barColor: 'bg-rose-500' };
+  if (score <= 2) return { label: t('auth.strength.fair'), color: 'text-amber-500', barColor: 'bg-amber-500' };
+  if (score <= 3) return { label: t('auth.strength.good'), color: 'text-blue-500', barColor: 'bg-blue-500' };
+  return { label: t('auth.strength.strong'), color: 'text-emerald-500', barColor: 'bg-emerald-500' };
 }
 
 /* ─── Component ─── */
 export default function UpdatePassword() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -58,9 +53,16 @@ export default function UpdatePassword() {
   }, []);
 
   /* Password validation */
-  const ruleResults = useMemo(() => PASSWORD_RULES.map((r) => r.test(password)), [password]);
+  const PASSWORD_RULES: PasswordRule[] = useMemo(() => [
+    { label: t('auth.rules.length'), test: (pw: string) => pw.length >= 6 },
+    { label: t('auth.rules.number'), test: (pw: string) => /\d/.test(pw) },
+    { label: t('auth.rules.uppercase'), test: (pw: string) => /[A-Z]/.test(pw) },
+    { label: t('auth.rules.special'), test: (pw: string) => /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(pw) },
+  ], [t]);
+
+  const ruleResults = useMemo(() => PASSWORD_RULES.map((r) => r.test(password)), [password, PASSWORD_RULES]);
   const strengthScore = ruleResults.filter(Boolean).length;
-  const strength = getStrengthLevel(strengthScore);
+  const strength = getStrengthLevel(strengthScore, t);
   const passwordsMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
   const canSubmit = strengthScore >= 2 && passwordsMatch;
 
@@ -78,7 +80,7 @@ export default function UpdatePassword() {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
-      setError(err.message || 'Error updating password. The link may have expired.');
+      setError(err.message || t('auth.errors.update_failed'));
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +95,7 @@ export default function UpdatePassword() {
       >
         <Link to="/login" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-8 transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to login
+          {t('auth.back_to_login')}
         </Link>
 
         <GlassCard className="p-10">
@@ -107,12 +109,12 @@ export default function UpdatePassword() {
               )}
             </div>
             <h1 className="text-3xl font-bold mb-2">
-              {success ? 'Password Updated' : 'Set New Password'}
+              {success ? t('auth.password_updated') : t('auth.set_new_password')}
             </h1>
             <p className="text-slate-500 text-sm">
               {success
-                ? 'Your password has been changed successfully.'
-                : 'Choose a strong password for your account.'
+                ? t('auth.password_success_msg')
+                : t('auth.password_strong_msg')
               }
             </p>
           </div>
@@ -162,25 +164,25 @@ export default function UpdatePassword() {
                 >
                   <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
                 </motion.div>
-                <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">All set!</p>
-                <p className="text-sm text-slate-500 mt-2">Redirecting to login in a few seconds...</p>
+                <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">{t('auth.all_set')}</p>
+                <p className="text-sm text-slate-500 mt-2">{t('auth.redirecting')}</p>
               </div>
 
               <Button
                 onClick={() => navigate('/login')}
                 className="w-full h-12"
               >
-                Go to Login Now
+                {t('auth.go_to_login')}
               </Button>
             </motion.div>
           ) : (
             <form onSubmit={handleUpdate} className="flex flex-col gap-5">
               {/* New Password */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('auth.password_label')}</label>
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter new password"
+                  placeholder={t('auth.password_placeholder')}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -242,10 +244,10 @@ export default function UpdatePassword() {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm Password</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('auth.confirm_password_label')}</label>
                 <Input
                   type={showConfirm ? 'text' : 'password'}
-                  placeholder="Re-enter new password"
+                  placeholder={t('auth.confirm_password_label')}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -269,9 +271,9 @@ export default function UpdatePassword() {
                     )}
                   >
                     {passwordsMatch ? (
-                      <><Check className="w-3.5 h-3.5" /> Passwords match</>
+                      <><Check className="w-3.5 h-3.5" /> {t('auth.passwords_match')}</>
                     ) : (
-                      <><X className="w-3.5 h-3.5" /> Passwords don't match</>
+                      <><X className="w-3.5 h-3.5" /> {t('auth.passwords_dont_match')}</>
                     )}
                   </motion.p>
                 )}
@@ -284,7 +286,7 @@ export default function UpdatePassword() {
                 disabled={!canSubmit}
               >
                 <Lock className="w-4 h-4 mr-2" />
-                Update Password
+                {t('auth.update_password_button')}
               </Button>
             </form>
           )}

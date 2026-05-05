@@ -6,10 +6,12 @@ import type { Company } from '../data/mockCompanies';
 import { JobCard } from '../components/dashboard/Cards';
 import { Input, Badge, GlassCard } from '../components/ui/Shared';
 import { Button } from '../components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Jobs() {
+  const { t } = useTranslation();
 
   const [jobs, setJobs] = useState<JobOffer[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -47,17 +49,49 @@ export default function Jobs() {
     fetchData();
   }, []);
 
-  const jobTypes = ['Full-time', 'Part-time', 'Remote', 'Contract', 'Internship'];
-  const companySizes = ['Small', 'Medium', 'Large'];
-  const salaryRanges = ['Under 50,000 DA', '50,000 - 100,000 DA', '100,000 - 150,000 DA', 'Above 150,000 DA'];
+  const jobTypes = [
+    { value: 'Full-time', label: t('jobs.types.full_time') },
+    { value: 'Part-time', label: t('jobs.types.part_time') },
+    { value: 'Remote', label: t('jobs.types.remote') },
+    { value: 'Contract', label: t('jobs.types.contract') },
+    { value: 'Internship', label: t('jobs.types.internship') }
+  ];
 
-  const allIndustries = useMemo(() => {
-    const industries = new Set<string>();
-    companies.forEach(company => {
-      if (company.industry) industries.add(company.industry);
-    });
-    return Array.from(industries).sort();
-  }, [companies]);
+  const companySizes = [
+    { value: 'Small', label: t('jobs.sizes.small') },
+    { value: 'Medium', label: t('jobs.sizes.medium') },
+    { value: 'Large', label: t('jobs.sizes.large') }
+  ];
+
+  const salaryRanges = [
+    { value: 'Under 50,000 DA', label: t('jobs.salaries.under_50k') },
+    { value: '50,000 - 100,000 DA', label: t('jobs.salaries.50k_100k') },
+    { value: '100,000 - 150,000 DA', label: t('jobs.salaries.100k_150k') },
+    { value: 'Above 150,000 DA', label: t('jobs.salaries.above_150k') }
+  ];
+
+  const allIndustries = [
+    { value: 'Technology', label: t('jobs.industries.technology') },
+    { value: 'Healthcare', label: t('jobs.industries.healthcare') },
+    { value: 'Finance', label: t('jobs.industries.finance') },
+    { value: 'Education', label: t('jobs.industries.education') },
+    { value: 'Manufacturing', label: t('jobs.industries.manufacturing') },
+    { value: 'Retail', label: t('jobs.industries.retail') },
+    { value: 'Construction', label: t('jobs.industries.construction') },
+    { value: 'Agriculture', label: t('jobs.industries.agriculture') },
+    { value: 'Energy', label: t('jobs.industries.energy') },
+    { value: 'Transportation', label: t('jobs.industries.transportation') },
+    { value: 'Hospitality', label: t('jobs.industries.hospitality') },
+    { value: 'Media', label: t('jobs.industries.media') },
+    { value: 'Real Estate', label: t('jobs.industries.real_estate') },
+    { value: 'Telecommunications', label: t('jobs.industries.telecommunications') },
+    { value: 'Software Development', label: t('jobs.industries.software_development') },
+    { value: 'E-commerce', label: t('jobs.industries.e_commerce') },
+    { value: 'Logistics', label: t('jobs.industries.logistics') },
+    { value: 'Marketing', label: t('jobs.industries.marketing') },
+    { value: 'Consulting', label: t('jobs.industries.consulting') },
+    { value: 'Other', label: t('jobs.industries.other') }
+  ];
 
   const allSkills = useMemo(() => {
     const skills = new Set<string>();
@@ -121,8 +155,8 @@ export default function Jobs() {
   return (
     <div className="max-w-7xl mx-auto px-8 py-12">
       <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">Explore Career Opportunities</h1>
-        <p className="text-slate-500">Discover and apply to the best jobs in Algeria's growing market.</p>
+        <h1 className="text-4xl font-bold mb-4">{t('jobs.title')}</h1>
+        <p className="text-slate-500">{t('jobs.subtitle')}</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -130,22 +164,22 @@ export default function Jobs() {
         <aside className="lg:w-64 space-y-8 hidden lg:block sticky top-24 self-start h-fit">
           <GlassCard className="p-6" hover={false}>
             <h3 className="font-bold flex items-center gap-2 mb-6 text-slate-900 dark:text-white italic">
-              <Filter className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Filter by Type
+              <Filter className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t('jobs.filter_type')}
             </h3>
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterType(null)}
                 className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
-                All Vacancies
+                {t('jobs.all_vacancies')}
               </button>
               {jobTypes.map(type => (
                 <button 
-                  key={type} 
-                  onClick={() => setFilterType(type)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === type ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  key={type.value} 
+                  onClick={() => setFilterType(type.value)}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterType === type.value ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
-                  {type}
+                  {type.label}
                 </button>
               ))}
             </div>
@@ -153,22 +187,22 @@ export default function Jobs() {
 
           <GlassCard className="p-6" hover={false}>
             <h3 className="font-bold flex items-center gap-2 mb-6 text-slate-900 dark:text-white italic">
-              <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Company Size
+              <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t('jobs.company_size')}
             </h3>
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterSize(null)}
                 className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
-                All Sizes
+                {t('jobs.all_sizes')}
               </button>
               {companySizes.map(size => (
                 <button 
-                  key={size} 
-                  onClick={() => setFilterSize(size)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === size ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  key={size.value} 
+                  onClick={() => setFilterSize(size.value)}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSize === size.value ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
-                  {size}
+                  {size.label}
                 </button>
               ))}
             </div>
@@ -176,22 +210,22 @@ export default function Jobs() {
 
           <GlassCard className="p-6" hover={false}>
             <h3 className="font-bold flex items-center gap-2 mb-6 text-slate-900 dark:text-white italic">
-              <Briefcase className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Industry
+              <Briefcase className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t('jobs.industry')}
             </h3>
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterIndustry(null)}
                 className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
-                All Industries
+                {t('jobs.all_industries')}
               </button>
               {allIndustries.map(industry => (
                 <button 
-                  key={industry} 
-                  onClick={() => setFilterIndustry(industry)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === industry ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  key={industry.value} 
+                  onClick={() => setFilterIndustry(industry.value)}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterIndustry === industry.value ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
-                  {industry}
+                  {industry.label}
                 </button>
               ))}
             </div>
@@ -199,22 +233,22 @@ export default function Jobs() {
 
           <GlassCard className="p-6" hover={false}>
             <h3 className="font-bold flex items-center gap-2 mb-6 text-slate-900 dark:text-white italic">
-              <Coins className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Salary Range
+              <Coins className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t('jobs.salary_range')}
             </h3>
             <div className="space-y-2">
               <button 
                 onClick={() => setFilterSalary(null)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                className={`w-full text-left px-2 py-2 rounded-xl text-sm transition-all ${filterSalary === null ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
               >
-                All Salaries
+                {t('jobs.all_salaries')}
               </button>
               {salaryRanges.map(range => (
                 <button 
-                  key={range} 
-                  onClick={() => setFilterSalary(range)}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === range ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
+                  key={range.value} 
+                  onClick={() => setFilterSalary(range.value)}
+                  className={`w-full text-left px-4 py-2 rounded-xl text-sm transition-all ${filterSalary === range.value ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'}`}
                 >
-                  {range}
+                  {range.label}
                 </button>
               ))}
             </div>
@@ -222,14 +256,14 @@ export default function Jobs() {
 
           <GlassCard className="p-6" hover={false}>
             <h3 className="font-bold flex items-center gap-2 mb-6 text-slate-900 dark:text-white italic">
-              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Key Skills
+              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t('jobs.key_skills')}
             </h3>
             <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => setSelectedSkills([])}
                 className={`px-3 py-1.5 rounded-xl text-xs transition-all ${selectedSkills.length === 0 ? 'bg-indigo-500 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 shadow-sm'}`}
               >
-                Any Skill
+                {t('jobs.any_skill')}
               </button>
               {allSkills.map(skill => (
                 <button 
@@ -253,14 +287,14 @@ export default function Jobs() {
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                <input 
                  type="text"
-                 placeholder="Search by title, company, industry, or skills..."
+                 placeholder={t('jobs.search_placeholder')}
                  className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
                />
             </div>
             <Button variant="outline" className="lg:hidden gap-2" onClick={() => setIsFilterOpen(!isFilterOpen)}>
-               <SlidersHorizontal className="w-4 h-4" /> Filters
+               <SlidersHorizontal className="w-4 h-4" /> {t('common.filters')}
             </Button>
           </div>
 
@@ -273,67 +307,59 @@ export default function Jobs() {
                 exit={{ height: 0, opacity: 0 }}
                 className="lg:hidden overflow-hidden bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 space-y-4"
               >
-                <h4 className="font-bold text-sm">Select Job Type</h4>
+                <h4 className="font-bold text-sm">{t('jobs.select_job_type')}</h4>
                 <div className="flex flex-wrap gap-2">
-                   {['All', ...jobTypes].map(type => (
+                   {[{ value: null, label: t('common.all') }, ...jobTypes].map(type => (
                      <button 
-                       key={type} 
-                       onClick={() => {
-                         setFilterType(type === 'All' ? null : type);
-                       }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((type === 'All' && filterType === null) || filterType === type) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       key={type.value || 'all'} 
+                       onClick={() => setFilterType(type.value)}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterType === type.value ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
-                       {type}
+                       {type.label}
                      </button>
                    ))}
                 </div>
 
-                <h4 className="font-bold text-sm mt-4">Company Size</h4>
+                <h4 className="font-bold text-sm mt-4">{t('jobs.company_size')}</h4>
                 <div className="flex flex-wrap gap-2">
-                   {['All', ...companySizes].map(size => (
+                   {[{ value: null, label: t('common.all') }, ...companySizes].map(size => (
                      <button 
-                       key={size} 
-                       onClick={() => {
-                         setFilterSize(size === 'All' ? null : size);
-                       }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((size === 'All' && filterSize === null) || filterSize === size) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       key={size.value || 'all'} 
+                       onClick={() => setFilterSize(size.value)}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterSize === size.value ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
-                       {size}
+                       {size.label}
                      </button>
                    ))}
                 </div>
 
-                <h4 className="font-bold text-sm mt-4">Industry</h4>
+                <h4 className="font-bold text-sm mt-4">{t('jobs.industry')}</h4>
                 <div className="flex flex-wrap gap-2">
-                   {['All', ...allIndustries].map(industry => (
+                   {[{ value: null, label: t('common.all') }, ...allIndustries].map(industry => (
                      <button 
-                       key={industry} 
-                       onClick={() => {
-                         setFilterIndustry(industry === 'All' ? null : industry);
-                       }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((industry === 'All' && filterIndustry === null) || filterIndustry === industry) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       key={industry.value || 'all'} 
+                       onClick={() => setFilterIndustry(industry.value)}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterIndustry === industry.value ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
-                       {industry}
+                       {industry.label}
                      </button>
                    ))}
                 </div>
 
-                <h4 className="font-bold text-sm mt-4">Salary Range</h4>
+                <h4 className="font-bold text-sm mt-4">{t('jobs.salary_range')}</h4>
                 <div className="flex flex-wrap gap-2">
-                   {['All', ...salaryRanges].map(range => (
+                   {[{ value: null, label: t('common.all') }, ...salaryRanges].map(range => (
                      <button 
-                       key={range} 
-                       onClick={() => {
-                         setFilterSalary(range === 'All' ? null : range);
-                       }}
-                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${((range === 'All' && filterSalary === null) || filterSalary === range) ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                       key={range.value || 'all'} 
+                       onClick={() => setFilterSalary(range.value)}
+                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterSalary === range.value ? 'bg-primary text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
                      >
-                       {range}
+                       {range.label}
                      </button>
                    ))}
                 </div>
 
-                <h4 className="font-bold text-sm mt-4">Required Skills</h4>
+                <h4 className="font-bold text-sm mt-4">{t('jobs.key_skills')}</h4>
                 <div className="flex flex-wrap gap-2">
                    {allSkills.map(skill => (
                      <button 
@@ -350,13 +376,13 @@ export default function Jobs() {
           </AnimatePresence>
 
           <div className="flex items-center justify-between text-sm text-slate-500">
-             <p>Showing <span className="font-bold text-foreground">{filteredJobs.length}</span> jobs found</p>
+             <p>{t('jobs.showing_results', { count: filteredJobs.length })}</p>
              <div className="flex items-center gap-2">
-                <span>Sort by:</span>
+                <span>{t('common.sort_by')}</span>
                 <select className="bg-transparent font-bold text-foreground outline-none cursor-pointer">
-                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Newest First</option>
-                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Salary Range</option>
-                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Company Name</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">{t('common.newest')}</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">{t('common.salary')}</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">{t('common.company')}</option>
                 </select>
              </div>
           </div>
@@ -381,19 +407,19 @@ export default function Jobs() {
                  <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-500">
                     <Search className="w-10 h-10" />
                  </div>
-                 <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No jobs found</h2>
+                 <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">{t('jobs.no_jobs_found')}</h2>
                  <p className="text-slate-500 max-w-md mx-auto mb-8">
                    {jobs.length === 0 
-                     ? "The job board is currently empty. If you have posted jobs but don't see them here, please ensure your Supabase RLS policies allow 'public' reading of the 'jobs' table." 
-                     : "No jobs match your current filters. Try adjusting your search or clearing the filters."}
+                     ? t('jobs.empty_board')
+                     : t('jobs.no_matches')}
                  </p>
                  <div className="flex justify-center gap-4">
                    <Button variant="outline" onClick={() => {setSearch(''); setFilterType(null); setFilterSize(null); setFilterSalary(null); setSelectedSkills([]); setFilterIndustry(null);}}>
-                     Clear all filters
+                     {t('common.clear_filters')}
                    </Button>
                    {jobs.length === 0 && (
                      <Button onClick={() => window.location.reload()}>
-                       Refresh Page
+                       {t('common.refresh')}
                      </Button>
                    )}
                  </div>

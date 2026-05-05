@@ -18,8 +18,10 @@ const COMMON_SKILLS = [
 const COLOR_OPTIONS = Object.keys(COLOR_PALETTE);
 
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { userId } = useParams();
   const { user: currentUser, refreshUser } = useAuth();
   const [targetUser, setTargetUser] = useState<any>(null);
@@ -60,11 +62,11 @@ export default function Profile() {
           if (data && !error) {
             setTargetUser(data);
           } else {
-            setError("Could not find this profile.");
+            setError(t('profile.error_not_found'));
           }
         } catch (err) {
           console.error("Error fetching public profile:", err);
-          setError("An error occurred while loading the profile.");
+          setError(t('profile.error_loading'));
         } finally {
           setIsLoadingPublic(false);
         }
@@ -135,7 +137,7 @@ export default function Profile() {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error('Error saving profile:', err);
-      setError(err?.message || 'Failed to save profile. Please try again.');
+      setError(err?.message || t('profile.error_loading'));
       setIsSaving(false);
     }
   };
@@ -168,17 +170,17 @@ export default function Profile() {
         className="mb-12"
       >
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white italic">
-          {isPublicView ? `${formData.fullName}'s Profile` : 'Profile Settings'}
+          {isPublicView ? t('profile.title_public', { name: formData.fullName }) : t('profile.title_settings')}
         </h1>
         <p className="text-slate-500 font-medium">
-          {isPublicView ? 'Professional experience and expertise summary.' : 'Elevate your professional presence and unlock new opportunities.'}
+          {isPublicView ? t('profile.subtitle_public') : t('profile.subtitle_settings')}
         </p>
       </motion.div>
 
       {isLoadingPublic ? (
         <div className="flex flex-col items-center justify-center py-20 text-indigo-500">
           <Loader2 className="w-12 h-12 animate-spin mb-4" />
-          <p className="text-sm font-bold uppercase tracking-widest italic">Retrieving Profile...</p>
+          <p className="text-sm font-bold uppercase tracking-widest italic">{t('profile.retrieving')}</p>
         </div>
       ) : (
 
@@ -195,7 +197,7 @@ export default function Profile() {
                   </div>
                </div>
                <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic mb-1">{formData.fullName}</h2>
-               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{targetUser?.role} Identity</p>
+               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-8 font-black">{t('profile.identity', { role: targetUser?.role })}</p>
                
               
               <div className="flex justify-center gap-4">
@@ -219,7 +221,7 @@ export default function Profile() {
 
             <GlassCard className="p-8 bg-indigo-500/5 border-indigo-500/20" hover={false}>
                <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-400" /> Core Strengths
+                  <Sparkles className="w-4 h-4 text-indigo-400" /> {t('profile.core_strengths')}
                </h4>
                <div className="flex flex-wrap gap-2">
                   {formData.skills.length > 0 ? formData.skills.map(skill => (
@@ -227,7 +229,7 @@ export default function Profile() {
                       {skill}
                     </span>
                   )) : (
-                    <p className="text-[10px] text-slate-500 italic">No skills added yet</p>
+                    <p className="text-[10px] text-slate-500 italic">{t('profile.no_skills')}</p>
                   )}
                </div>
             </GlassCard>
@@ -241,45 +243,45 @@ export default function Profile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="md:col-span-2">
                       <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
-                         <User className="w-5 h-5 text-indigo-400" /> {isPublicView ? 'Professional Profile' : 'Personal Identity'}
+                         <User className="w-5 h-5 text-indigo-400" /> {isPublicView ? t('profile.professional_profile') : t('profile.personal_identity')}
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
                    </div>
                    <Input 
-                     label="Full Name" 
+                     label={t('profile.full_name')} 
                      value={formData.fullName} 
                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                      readOnly={!canEdit}
                    />
                    <Input 
-                     label="Email Address" 
+                     label={t('profile.email_address')} 
                      type="email" 
                      value={formData.email} 
                      disabled
                      readOnly
                    />
                    <Input 
-                     label="Phone Number" 
-                     placeholder={canEdit ? "+213 5XX XX XX XX" : "N/A"} 
+                     label={t('profile.phone_number')} 
+                     placeholder={canEdit ? "+213 5XX XX XX XX" : t('common.na')} 
                      value={formData.phone} 
                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
                      readOnly={!canEdit}
                    />
                    <Input 
-                     label="Location" 
-                     placeholder={canEdit ? "Algiers, Algeria" : "N/A"} 
+                     label={t('profile.location')} 
+                     placeholder={canEdit ? "Algiers, Algeria" : t('common.na')} 
                      value={formData.location} 
                      onChange={(e) => setFormData({...formData, location: e.target.value})}
                      readOnly={!canEdit}
                    />
                    <div className="md:col-span-2">
                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                       Bio / About Me
+                       {t('profile.bio_label')}
                      </label>
                      <textarea
                        value={formData.bio}
                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                       placeholder={canEdit ? "Tell us about yourself, your experience, and what you're looking for..." : "No bio available."}
+                       placeholder={canEdit ? t('profile.bio_placeholder') : t('profile.no_bio')}
                        rows={4}
                        readOnly={!canEdit}
                        className={cn(
@@ -293,7 +295,7 @@ export default function Profile() {
                 <div className="space-y-6">
                    <div className="md:col-span-2">
                       <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
-                         <Tag className="w-5 h-5 text-indigo-400" /> Expertise & Skills
+                         <Tag className="w-5 h-5 text-indigo-400" /> {t('profile.expertise_skills')}
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
                    </div>
@@ -302,8 +304,8 @@ export default function Profile() {
                      <div className="space-y-4">
                        <div className="relative">
                          <Input 
-                           label="Add Skills" 
-                           placeholder="Type a skill and press Enter" 
+                           label={t('profile.add_skills')} 
+                           placeholder={t('profile.skill_placeholder')} 
                            value={skillInput}
                            onChange={(e) => setSkillInput(e.target.value)}
                            onKeyDown={(e) => {
@@ -332,7 +334,7 @@ export default function Profile() {
                                    <Plus className="w-4 h-4 text-slate-600 group-hover:text-indigo-400" />
                                  </button>
                                )) : (
-                                 <div className="px-4 py-3 text-xs text-slate-500 italic">Press Enter to add "{skillInput}"</div>
+                                 <div className="px-4 py-3 text-xs text-slate-500 italic">{t('profile.press_enter_to_add', { skill: skillInput })}</div>
                                )}
                              </motion.div>
                            )}
@@ -368,28 +370,28 @@ export default function Profile() {
                 <div className="space-y-6">
                    <div className="md:col-span-2">
                       <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white italic flex items-center gap-2">
-                         <Globe className="w-5 h-5 text-indigo-400" /> Links & Presence
+                         <Globe className="w-5 h-5 text-indigo-400" /> {t('profile.links_presence')}
                       </h3>
                       <div className="h-px w-full bg-gradient-to-r from-indigo-500/30 to-transparent" />
                    </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <Input 
-                       label="GitHub Profile" 
-                       placeholder={canEdit ? "github.com/username" : "N/A"} 
+                       label={t('profile.github_profile')} 
+                       placeholder={canEdit ? "github.com/username" : t('common.na')} 
                        value={formData.githubUrl} 
                        onChange={(e) => setFormData({...formData, githubUrl: e.target.value})}
                        readOnly={!canEdit}
                      />
                      <Input 
-                       label="Portfolio URL" 
-                       placeholder={canEdit ? "https://behance.net/username" : "N/A"} 
+                       label={t('profile.portfolio_url')} 
+                       placeholder={canEdit ? "https://behance.net/username" : t('common.na')} 
                        value={formData.portfolioUrl} 
                        onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})}
                        readOnly={!canEdit}
                      />
                      <Input 
-                       label="LinkedIn Profile" 
-                       placeholder={canEdit ? "linkedin.com/in/username" : "N/A"} 
+                       label={t('profile.linkedin_profile')} 
+                       placeholder={canEdit ? "linkedin.com/in/username" : t('common.na')} 
                        value={formData.linkedin} 
                        onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
                        readOnly={!canEdit}
@@ -423,7 +425,7 @@ export default function Profile() {
                           className="flex items-center gap-2 text-emerald-400 font-medium italic text-sm"
                         >
                           <Check className="w-4 h-4" />
-                          Profile updated successfully
+                          {t('profile.update_success')}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -438,7 +440,7 @@ export default function Profile() {
                       isLoading={isSaving}
                     >
                         <Save className="w-6 h-6" /> 
-                        {showSuccess ? "Success!" : "Save Profile"}
+                        {showSuccess ? t('common.success') : t('profile.save_profile')}
                     </Button>
                   </div>
                 )}
@@ -453,6 +455,7 @@ export default function Profile() {
 
 function FollowedCompanies() {
   const { preferences, toggleFollowCompany } = useUserPreferences();
+  const { t } = useTranslation();
   const [companies, setCompanies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -481,7 +484,7 @@ function FollowedCompanies() {
   return (
     <GlassCard className="p-8 bg-white dark:bg-white/5 border-slate-200 dark:border-white/10" hover={false}>
       <h4 className="font-bold mb-6 text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-2">
-        <Building2 className="w-4 h-4 text-indigo-400" /> Followed Companies
+        <Building2 className="w-4 h-4 text-indigo-400" /> {t('profile.followed_companies')}
       </h4>
       <div className="space-y-4">
         {isLoading ? (
@@ -505,7 +508,7 @@ function FollowedCompanies() {
             </button>
           </div>
         )) : (
-          <p className="text-[10px] text-slate-500 italic text-center py-4">You aren't following any companies yet.</p>
+          <p className="text-[10px] text-slate-500 italic text-center py-4">{t('profile.no_followed_companies')}</p>
         )}
       </div>
     </GlassCard>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, ArrowLeft, Building2, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +9,7 @@ import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register } = useAuth();
   const [role, setRole] = useState<'candidate' | 'admin'>('candidate');
@@ -22,7 +24,7 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.errors.passwords_mismatch'));
       return;
     }
     setIsLoading(true);
@@ -30,7 +32,7 @@ export default function Register() {
     if (newUser) {
       navigate(newUser.role === 'admin' ? '/admin-dashboard' : '/dashboard');
     } else {
-      setError(registerError || 'Registration failed');
+      setError(registerError || t('auth.errors.registration_failed'));
     }
     setIsLoading(false);
   };
@@ -48,13 +50,13 @@ export default function Register() {
       >
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-8 transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to home
+          {t('auth.back_to_home')}
         </Link>
         
         <GlassCard className="p-10">
           <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-2">Create Account</h1>
-            <p className="text-slate-500">Join the JobLinkDZ professional network today</p>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-2">{t('auth.create_account')}</h1>
+            <p className="text-slate-500">{t('auth.join_network')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -67,8 +69,8 @@ export default function Register() {
                 <UserCircle className="w-8 h-8" />
               </div>
               <div>
-                <h3 className={cn("font-bold text-lg", role === 'candidate' ? "text-slate-950 dark:text-white" : "text-slate-600 dark:text-slate-400")}>Candidate</h3>
-                <p className="text-sm text-slate-500 font-medium italic">I want to find a job</p>
+                <h3 className={cn("font-bold text-lg", role === 'candidate' ? "text-slate-950 dark:text-white" : "text-slate-600 dark:text-slate-400")}>{t('auth.candidate')}</h3>
+                <p className="text-sm text-slate-500 font-medium italic">{t('auth.i_want_job')}</p>
               </div>
             </button>
 
@@ -81,34 +83,34 @@ export default function Register() {
                 <Building2 className="w-8 h-8" />
               </div>
               <div>
-                <h3 className={cn("font-bold text-lg", role === 'admin' ? "text-slate-950 dark:text-white" : "text-slate-600 dark:text-slate-400")}>Recruiter</h3>
-                <p className="text-sm text-slate-500 font-medium italic">I am looking for talent</p>
+                <h3 className={cn("font-bold text-lg", role === 'admin' ? "text-slate-950 dark:text-white" : "text-slate-600 dark:text-slate-400")}>{t('auth.recruiter')}</h3>
+                <p className="text-sm text-slate-500 font-medium italic">{t('auth.i_look_talent')}</p>
               </div>
             </button>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" required />
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" required />
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t('auth.full_name_placeholder')} required />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('auth.email_label')} type="email" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" required />
-              <Input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" type="password" required />
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.password_label')} type="password" required />
+              <Input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('auth.confirm_password_label')} type="password" required />
             </div>
 
             {error && <div className="text-rose-500 text-sm">{error}</div>}
 
             <div className="flex flex-col md:col-span-2 mt-4">
               <Button type="submit" className="w-full h-14 text-xl" isLoading={isLoading}>
-                Create account
+                {t('auth.create_account_button')}
               </Button>
             </div>
           </form>
 
           <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-500">
-              Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Sign In</Link>
+              {t('auth.already_have_account')} <Link to="/login" className="text-primary font-bold hover:underline">{t('auth.sign_in_link')}</Link>
             </p>
           </div>
         </GlassCard>

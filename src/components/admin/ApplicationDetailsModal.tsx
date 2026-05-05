@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { Application, getAppCandidateName, getAppCandidateEmail, getAppCandidatePhone, getAppCandidateLocation, getAppJobTitle } from "../../data/mockApplications";
 import { storageAPI } from "../../services/api";
 import { Badge } from "../ui/Shared";
@@ -27,6 +28,7 @@ export default function ApplicationDetailsModal({
   onClose,
   onStatusChange,
 }: ApplicationDetailsModalProps) {
+  const { t } = useTranslation();
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function ApplicationDetailsModal({
                 </span>
               </h2>
               <p className="text-sm text-slate-500 font-medium">
-                Application for{" "}
+                {t('application_modal.application_for')}{" "}
                 <span className="text-indigo-400">{getAppJobTitle(app)}</span>
               </p>
               <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-400 font-medium">
@@ -94,23 +96,23 @@ export default function ApplicationDetailsModal({
             <div className="md:col-span-2 space-y-8">
               <section>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
-                  <Mail className="w-3.5 h-3.5" /> Cover Message
+                  <Mail className="w-3.5 h-3.5" /> {t('application_modal.cover_message')}
                 </h3>
                 <div className="p-6 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                  {app.cover_letter || "No cover letter provided."}
+                  {app.cover_letter || t('application_modal.no_cover')}
                 </div>
               </section>
 
               <section>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> CV Preview
+                  <FileText className="w-3.5 h-3.5" /> {t('application_modal.cv_preview')}
                 </h3>
                 <div className="w-full rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden">
                   <div className="bg-slate-50 dark:bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <FileText className="w-4 h-4 text-indigo-400" />
                       <span className="text-xs font-bold text-slate-900 dark:text-white italic">
-                        {app.resume_url ? "Resume Attached" : "No file"}
+                        {app.resume_url ? t('application_modal.resume_attached') : t('application_modal.no_file')}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -156,20 +158,20 @@ export default function ApplicationDetailsModal({
                                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg"
                                onClick={() => window.open(resumeUrl, '_blank')}
                              >
-                               <ExternalLink className="w-4 h-4 mr-2" /> Open in New Tab
+                               <ExternalLink className="w-4 h-4 mr-2" /> {t('application_modal.open_new_tab')}
                              </Button>
                           </div>
                         </div>
                       ) : (
                         <div className="flex flex-col h-full items-center justify-center p-8 text-center">
                           <Loader2 className="w-12 h-12 animate-spin text-indigo-400 mb-4" />
-                          <p className="text-slate-500 font-bold italic mb-2">RETRIEVING DOCUMENT...</p>
-                          <p className="text-xs text-slate-400 max-w-[200px]">If this takes too long, the file might be unavailable or blocked by your browser.</p>
+                          <p className="text-slate-500 font-bold italic mb-2">{t('application_modal.retrieving')}</p>
+                          <p className="text-xs text-slate-400 max-w-[200px]">{t('application_modal.retrieving_subtitle')}</p>
                         </div>
                       )
                     ) : (
                       <div className="flex h-full items-center justify-center text-slate-500">
-                        No CV provided for this application.
+                        {t('application_modal.no_cv')}
                       </div>
                     )}
                   </div>
@@ -180,12 +182,12 @@ export default function ApplicationDetailsModal({
             <div className="space-y-8">
               <section>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
-                  Details
+                  {t('application_modal.details')}
                 </h3>
                 <div className="space-y-4">
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
-                      Status
+                      {t('application_modal.status')}
                     </p>
                     <Badge
                       variant={
@@ -197,12 +199,12 @@ export default function ApplicationDetailsModal({
                       }
                       className="mt-1"
                     >
-                      {app.status}
+                      {t(`admin_applications.status.${app.status}`)}
                     </Badge>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
-                      Applied On
+                      {t('application_modal.applied_on')}
                     </p>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {new Date(app.created_at).toLocaleDateString(undefined, {
@@ -212,7 +214,7 @@ export default function ApplicationDetailsModal({
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
-                      Job ID
+                      {t('application_modal.job_id')}
                     </p>
                     <p className="text-sm font-mono text-indigo-400">
                       #{app.job_id.slice(0, 8)}...
@@ -223,7 +225,7 @@ export default function ApplicationDetailsModal({
 
               <section>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
-                  Quick Actions
+                  {t('application_modal.quick_actions')}
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
@@ -234,7 +236,7 @@ export default function ApplicationDetailsModal({
                       onClose();
                     }}
                   >
-                    <CheckCircle className="w-4 h-4" /> Accept
+                    <CheckCircle className="w-4 h-4" /> {t('application_modal.accept')}
                   </Button>
                   <Button
                     variant="outline"
@@ -244,7 +246,7 @@ export default function ApplicationDetailsModal({
                       onClose();
                     }}
                   >
-                    <XCircle className="w-4 h-4" /> Reject
+                    <XCircle className="w-4 h-4" /> {t('application_modal.reject')}
                   </Button>
                 </div>
               </section>
@@ -254,7 +256,7 @@ export default function ApplicationDetailsModal({
 
         <div className="p-6 border-t border-white/5 bg-white/[0.01] flex justify-end">
           <Button onClick={onClose} variant="ghost">
-            Close Details
+            {t('application_modal.close')}
           </Button>
         </div>
       </motion.div>

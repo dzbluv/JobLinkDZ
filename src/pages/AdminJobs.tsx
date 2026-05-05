@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Plus, Search, Edit2, Trash2, Eye, MapPin, 
-  Briefcase, MoreVertical, CheckCircle, Clock, Building2,
-  Check, XCircle, Slash, Loader2
+  Briefcase, Plus, TrendingUp, Search, MoreHorizontal, Filter, 
+  Trash2, Edit2, Copy, Download, Eye, Clock, CheckCircle, XCircle, Loader2, MapPin, Building2, Check
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { JobOffer } from '../data/mockJobs';
 import type { Application } from '../data/mockApplications';
 import { jobsAPI, applicationsAPI, companiesAPI } from '../services/api';
@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminJobs() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { checkJobAgainstAlerts } = useJobAlerts();
   const [jobs, setJobs] = useState<JobOffer[]>([]);
@@ -46,19 +47,17 @@ export default function AdminJobs() {
         try {
            let company = await companiesAPI.getByOwnerId(user.id);
            
-           // Auto-fix: if recruiter has no company, create a default one
-           if (!company && user.role === 'admin') {
-             console.log('[AdminJobs] Creating missing company for recruiter...');
-             const newCompanyId = await companiesAPI.create({
-               owner_id: user.id,
-               name: user.full_name + "'s Company",
-               industry: 'Technology',
-               size: 'Medium',
-               location: 'Algiers',
-               description: 'Automatically created company profile.'
-             });
-             company = await companiesAPI.getById(newCompanyId);
-           }
+            if (!company && user.role === 'admin') {
+              const newCompanyId = await companiesAPI.create({
+                owner_id: user.id,
+                name: t('admin_jobs.defaults.auto_company_name', { name: user.full_name }),
+                industry: 'Technology',
+                size: 'Medium',
+                location: 'Algiers',
+                description: t('admin_jobs.defaults.auto_company_desc')
+              });
+              company = await companiesAPI.getById(newCompanyId);
+            }
 
            if (company) {
              setCompanyId(company.id);
@@ -113,7 +112,7 @@ export default function AdminJobs() {
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id || !companyId) {
-      alert('Your company profile is still being set up. Please try again in a moment.');
+      alert(t('admin_jobs.alerts.company_setup'));
       return;
     }
     setIsPosting(true);
@@ -133,7 +132,6 @@ export default function AdminJobs() {
         setJobs(prev => prev.map(j => j.id === editingJobId ? { ...j, ...updateData } : j));
         setIsModalOpen(false);
         setEditingJobId(null);
-        setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
       } else {
         const newJob: Omit<JobOffer, 'id'> = {
           title: form.title,
@@ -141,8 +139,8 @@ export default function AdminJobs() {
           company_id: companyId,
           location: form.location,
           job_type: form.type as any,
-          salary_range: form.salary || 'Competitive',
-          description: form.description || 'No description provided.',
+          salary_range: form.salary || t('admin_jobs.defaults.competitive'),
+          description: form.description || t('admin_jobs.defaults.no_description'),
           skills: [],
           requirements: [],
           responsibilities: [],
@@ -151,23 +149,19 @@ export default function AdminJobs() {
           work_hours_per_week: parseInt(form.workHours) || 40
         };
 
-        console.log('[AdminJobs] Posting job:', newJob);
         const newId = await jobsAPI.create(newJob);
-        console.log('[AdminJobs] Created job ID:', newId);
-        
         if (newId) {
            const createdJob = { ...newJob, id: newId } as JobOffer;
            setJobs([createdJob, ...jobs]);
            checkJobAgainstAlerts(createdJob);
            setIsModalOpen(false);
-           setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' });
         } else {
-           alert('Failed to create job. Check the browser console for details.');
+           alert(t('admin_jobs.alerts.create_failed'));
         }
       }
     } catch (err) {
       console.error('Failed to post job:', err);
-      alert('Failed to post job. Please check your connection.');
+      alert(t('admin_jobs.alerts.post_failed'));
     } finally {
       setIsPosting(false);
     }
@@ -186,14 +180,6 @@ export default function AdminJobs() {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedJobs.length === filteredJobs.length) {
-      setSelectedJobs([]);
-    } else {
-      setSelectedJobs(filteredJobs.map(j => j.id));
-    }
-  };
-
   const handleBulkClose = async () => {
     for (const id of selectedJobs) {
        await jobsAPI.update(id, { status: 'closed' });
@@ -205,7 +191,7 @@ export default function AdminJobs() {
   };
 
   const handleBulkDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${selectedJobs.length} selected jobs?`)) {
+    if (confirm(t('admin_jobs.bulk_delete_confirm', { count: selectedJobs.length }))) {
       for (const id of selectedJobs) {
          await jobsAPI.delete(id);
       }
@@ -221,14 +207,22 @@ export default function AdminJobs() {
     
     if (jobsToExport.length === 0) return;
 
-    const headers = ['Title', 'Company', 'Location', 'Type', 'Salary', 'Status', 'Date Posted'];
+    const headers = [
+      t('admin_jobs.table.headers.title'),
+      t('admin_jobs.table.headers.company'),
+      t('admin_jobs.table.headers.location'),
+      t('admin_jobs.table.headers.type'),
+      t('admin_jobs.table.headers.salary'),
+      t('admin_jobs.table.headers.status'),
+      t('admin_jobs.table.headers.date_posted')
+    ];
     const rows = jobsToExport.map(job => [
       job.title,
       job.company,
       job.location,
-      job.job_type,
+      t(`jobs.types.${job.job_type.toLowerCase().replace('-', '_')}`),
       job.salary_range,
-      job.status,
+      t(`admin_jobs.status.${job.status}`),
       new Date(job.created_at).toLocaleDateString()
     ]);
 
@@ -242,7 +236,6 @@ export default function AdminJobs() {
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     link.setAttribute('download', `job_postings_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -252,31 +245,27 @@ export default function AdminJobs() {
     <div className="max-w-7xl mx-auto px-8 py-12 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold italic text-slate-900 dark:text-white">Manage Job Offers</h1>
-          <p className="text-slate-500">Create, edit, and monitor your current job openings.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('admin_jobs.title')}</h1>
+          <p className="text-slate-500">{t('admin_jobs.subtitle')}</p>
         </div>
-        <Button className="gap-2" onClick={() => { setEditingJobId(null); setForm({ title: '', company: companyName, location: '', salary: '', type: 'Full-time', description: '', workHours: '40' }); setIsModalOpen(true); }}>
-          <Plus className="w-5 h-5" /> Post Job Offer
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" className="gap-2" onClick={handleExportCSV}> <Download className="w-4 h-4" /> {t('admin_jobs.export_csv')}</Button>
+          <Button className="gap-2" onClick={() => { setEditingJobId(null); setIsModalOpen(true); }}> <Plus className="w-5 h-5" /> {t('admin_jobs.create_new')}</Button>
+        </div>
       </div>
 
-      <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-           <input 
-             type="text"
-             placeholder="Search postings..."
-             className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium"
-             value={search}
-             onChange={(e) => setSearch(e.target.value)}
-           />
+      <div className="mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+          <input 
+            type="text" 
+            placeholder={t('admin_jobs.search_placeholder')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-11 pr-4 py-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 transition-all w-64"
+          />
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
-           <Button variant="ghost" className="flex-1 md:flex-none gap-2 text-slate-400 hover:text-slate-900 dark:text-white" onClick={handleSelectAll}>
-              {selectedJobs.length === filteredJobs.length && filteredJobs.length > 0 ? 'Deselect All' : 'Select All'}
-           </Button>
-           <Button variant="outline" className="flex-1 md:flex-none" onClick={handleExportCSV}>Export CSV</Button>
-        </div>
+        <Button variant="outline" className="gap-2"> <Filter className="w-4 h-4" /> {t('admin_jobs.filters')}</Button>
       </div>
 
       <div className="space-y-6 pb-24">
@@ -286,7 +275,7 @@ export default function AdminJobs() {
            </div>
         ) : filteredJobs.length === 0 ? (
            <div className="py-20 text-center text-slate-500">
-             No jobs found.
+             {t('admin_jobs.no_jobs_found')}
            </div>
         ) : filteredJobs.map((job) => {
           const jobApplications = applications.filter(app => app.job_id === job.id);
@@ -297,10 +286,9 @@ export default function AdminJobs() {
           return (
             <motion.div key={job.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <GlassCard 
-                className={`p-0 overflow-hidden border transition-all duration-300 ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500/50 bg-indigo-500/5' : 'border-white/5'}`} 
+                className={`p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 border transition-all duration-300 ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500/50 bg-indigo-500/5' : 'border-white/5'}`} 
                 hover={false}
               >
-                <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                    <button 
                      onClick={() => toggleJobSelection(job.id)}
                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
@@ -309,19 +297,11 @@ export default function AdminJobs() {
                    >
                      {isSelected && <Check className="w-4 h-4 text-slate-900 dark:text-white" />}
                    </button>
-
-                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10 overflow-hidden p-2">
-                      {job.logo ? (
-                        <img src={job.logo} alt={job.company} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                      ) : (
-                        <Briefcase className="w-8 h-8 text-indigo-400" />
-                      )}
-                   </div>
                    
                    <div className="flex-1 text-center md:text-left">
                       <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-2">
                          <h3 className="text-xl font-bold text-slate-900 dark:text-white italic">{job.title}</h3>
-                         <Badge variant={job.status === 'active' ? 'success' : 'error'}>{job.status}</Badge>
+                         <Badge variant={job.status === 'active' ? 'success' : 'error'}>{t(`admin_jobs.status.${job.status}`)}</Badge>
                       </div>
                       <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                          <span className="flex items-center gap-1"><Building2 className="w-4 h-4 text-indigo-400" /> {job.company}</span>
@@ -333,191 +313,53 @@ export default function AdminJobs() {
                    <div className="flex items-center gap-10 text-center">
                       <div>
                          <p className="text-xl font-bold text-slate-900 dark:text-white">{totalApplicants}</p>
-                         <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">Applied</p>
-                      </div>
-                      <div className="h-10 w-px bg-white/10" />
-                      <div>
-                         <p className="text-xl font-bold text-slate-900 dark:text-white text-emerald-400">{newApplicants}</p>
-                         <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">New</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('admin_jobs.table.applicants')}</p>
                       </div>
                    </div>
   
                    <div className="flex gap-2">
-                       <Button 
-                         variant="ghost" 
-                         size="icon" 
-                         className="text-slate-500 hover:text-indigo-500" 
-                         title="View Public Post"
-                         onClick={() => window.open(`/jobs/${job.id}`, '_blank')}
-                       >
-                         <Eye className="w-5 h-5" />
-                       </Button>
-                       <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-500" title="Edit Job" onClick={() => {
+                       <Button variant="ghost" size="icon" onClick={() => {
                           setEditingJobId(job.id);
-                          setForm({
-                             title: job.title,
-                             company: job.company,
-                             location: job.location,
-                             salary: job.salary_range || '',
-                             type: job.job_type,
-                             description: job.description || '',
-                             workHours: (job.work_hours_per_week || 40).toString()
-                          });
                           setIsModalOpen(true);
                        }}><Edit2 className="w-5 h-5" /></Button>
-                       <Button variant="ghost" size="icon" className="text-slate-500 hover:text-rose-500" title="Delete Job" onClick={async () => {
-                          if (confirm('Are you sure you want to delete this job?')) {
-                             try {
-                               await jobsAPI.delete(job.id);
-                               setJobs(prev => prev.filter(j => j.id !== job.id));
-                             } catch (err) {
-                               console.error("Failed to delete job:", err);
-                               alert("Failed to delete job. It might have active applications.");
-                             }
+                       <Button variant="ghost" size="icon" className="text-rose-500" onClick={async () => {
+                          if (confirm(t('admin_jobs.confirm_delete_simple'))) {
+                             await jobsAPI.delete(job.id);
+                             setJobs(prev => prev.filter(j => j.id !== job.id));
                           }
                        }}><Trash2 className="w-5 h-5" /></Button>
                     </div>
-                </div>
               </GlassCard>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Floating Bulk Actions Bar */}
-      <AnimatePresence>
-        {selectedJobs.length > 0 && (
-          <motion.div 
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 glass px-8 py-4 rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center gap-8 min-w-[400px]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-slate-900 dark:text-white font-bold animate-pulse">
-                {selectedJobs.length}
-              </div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Jobs Selected</p>
-            </div>
-            
-            <div className="h-8 w-px bg-white/10" />
-            
-            <div className="flex gap-4">
-              <Button 
-                variant="ghost" 
-                className="gap-2 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10"
-                onClick={handleBulkClose}
-              >
-                <XCircle className="w-4 h-4" /> Close Positions
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="gap-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10"
-                onClick={handleBulkDelete}
-              >
-                <Trash2 className="w-4 h-4" /> Delete Forever
-              </Button>
-            </div>
-            
-            <button 
-              onClick={() => setSelectedJobs([])}
-              className="ml-4 p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500"
-            >
-              <Plus className="w-5 h-5 rotate-45" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
-             <motion.div 
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               onClick={() => setIsModalOpen(false)}
-               className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
-             />
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.95, y: 20 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="relative z-10 w-full max-w-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
-             >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
-                
-                <div className="flex justify-between items-center mb-8 relative z-10">
-                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">{editingJobId ? 'Edit Job Offer' : 'Post a New Job'}</h2>
-                   <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white dark:bg-white/5 rounded-full transition-colors text-slate-500">
-                     <Plus className="w-6 h-6 rotate-45" />
-                   </button>
-                </div>
-                
-                <form className="grid grid-cols-2 gap-6 relative z-10" onSubmit={handlePostJob}>
+             <motion.div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
+              <motion.div className="relative z-10 w-full max-w-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-10 shadow-2xl">
+                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 italic">{editingJobId ? t('admin_jobs.modal.edit_title') : t('admin_jobs.modal.post_title')}</h2>
+                 <form className="grid grid-cols-2 gap-6" onSubmit={handlePostJob}>
                     <div className="col-span-2">
-                      <Input 
-                        label="Job Title" 
-                        placeholder="e.g. Senior Backend Engineer" 
-                        value={form.title}
-                        onChange={(e) => setForm({...form, title: e.target.value})}
-                        required
-                      />
+                      <Input label={t('admin_jobs.modal.job_title')} value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required />
                     </div>
-                    <Input 
-                      label="Company" 
-                      placeholder="Your Company Name" 
-                      value={form.company}
-                      onChange={(e) => setForm({...form, company: e.target.value})}
-                      required
-                      readOnly
-                      className="cursor-default"
-                    />
-                    <Input 
-                      label="Location" 
-                      placeholder="e.g. Algiers" 
-                      value={form.location}
-                      onChange={(e) => setForm({...form, location: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      label="Salary Range" 
-                      placeholder="e.g. 120000 - 180000 DA" 
-                      value={form.salary}
-                      onChange={(e) => setForm({...form, salary: e.target.value})}
-                    />
+                    <Input label={t('admin_jobs.modal.salary')} value={form.salary} onChange={(e) => setForm({...form, salary: e.target.value})} />
                     <div className="space-y-1">
-                      <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Job Type</label>
-                      <select 
-                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 transition-all font-medium appearance-none"
-                        value={form.type}
-                        onChange={(e) => setForm({...form, type: e.target.value})}
-                      >
-                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Full-time">Full-time</option>
-                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Part-time">Part-time</option>
-                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Remote">Remote</option>
-                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Contract">Contract</option>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest">{t('admin_jobs.modal.job_type')}</label>
+                      <select className="w-full bg-white dark:bg-white/5 border border-slate-200 rounded-xl px-4 py-3 text-sm" value={form.type} onChange={(e) => setForm({...form, type: e.target.value})}>
+                         <option value="Full-time">{t('admin_jobs.modal.job_type_full_time')}</option>
+                         <option value="Contract">{t('admin_jobs.modal.job_type_contract')}</option>
                       </select>
                     </div>
-                    <Input 
-                      label="Work Hours / Week" 
-                      placeholder="e.g. 40" 
-                      type="number"
-                      value={form.workHours}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, workHours: e.target.value})}
-                    />
-                    <div className="col-span-2 space-y-1">
-                       <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest ml-1">Description</label>
-                       <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="Enter job description..." value={form.description || ''} onChange={(e) => setForm({...form, description: e.target.value})} />
-                    </div>
-                    <div className="col-span-2 pt-6">
-                       <Button type="submit" className="w-full h-14 text-lg" isLoading={isPosting}>
-                         {isPosting ? (editingJobId ? 'Updating...' : 'Posting Live...') : (editingJobId ? 'Update Job Posting' : 'Create Job Posting')}
-                       </Button>
-                       <p className="text-center text-[10px] text-slate-600 mt-4 uppercase font-bold tracking-widest">
-                         {editingJobId ? 'Updates will reflect immediately.' : 'Posting will trigger relevant job alerts to registered candidates.'}
-                       </p>
-                    </div>
+                     <div className="col-span-2 space-y-1">
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 tracking-widest">{t('admin_jobs.modal.description')}</label>
+                        <textarea rows={3} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10" value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} />
+                     </div>
+                     <div className="col-span-2 pt-6">
+                        <Button type="submit" className="w-full h-14 text-lg" isLoading={isPosting}>{editingJobId ? t('admin_jobs.modal.update_button') : t('admin_jobs.modal.create_button')}</Button>
+                     </div>
                  </form>
              </motion.div>
           </div>

@@ -84,8 +84,8 @@ export function Navbar() {
   const navLinks = user?.role === 'admin' 
     ? [
         { label: t('nav.dashboard'), path: '/admin-dashboard', icon: LayoutDashboard },
-        { label: 'Manage Jobs', path: '/admin-jobs', icon: Briefcase },
-        { label: 'Applications', path: '/admin-applications', icon: UserIcon },
+        { label: t('nav.manage_jobs'), path: '/admin-jobs', icon: Briefcase },
+        { label: t('nav.applications'), path: '/admin-applications', icon: UserIcon },
       ]
     : [
         { label: t('nav.browse'), path: '/jobs', icon: Briefcase },
@@ -197,18 +197,18 @@ export function Navbar() {
                         className="absolute right-0 mt-4 w-80 max-h-[400px] glass rounded-3xl z-50 border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden origin-top-right perspective-1000 bg-white/95 dark:bg-slate-900/95"
                       >
                         <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50  dark:bg-transparent">
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Activity Log</h4>
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('notifications.activity_log')}</h4>
                           <button 
                             onClick={markAllAsRead}
                             className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                           >
-                            Mark all as read
+                            {t('notifications.mark_all_read')}
                           </button>
                         </div>
                         <div className="flex-1 overflow-y-auto py-2">
                           {notifications.length === 0 ? (
                             <div className="p-8 text-center text-slate-500 italic text-xs">
-                              No recent activity.
+                              {t('notifications.no_activity')}
                             </div>
                           ) : (
                             <div className="divide-y divide-slate-100 dark:divide-white/5">
@@ -257,10 +257,10 @@ export function Navbar() {
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               <Link to="/login">
-                <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-slate-900 dark:text-white">Login</Button>
+                <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-slate-900 dark:text-white">{t('nav.login')}</Button>
               </Link>
               <Link to="/register">
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors">Get Started</Button>
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors">{t('nav.register')}</Button>
               </Link>
             </div>
           )}
@@ -297,7 +297,7 @@ export function Navbar() {
               className="fixed top-0 right-0 h-full w-full max-w-sm bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-2xl z-[60] shadow-2xl flex flex-col md:hidden overflow-hidden"
             >
               <div className="p-6 flex justify-between items-center border-b border-slate-200 dark:border-white/5">
-                <span className="text-xl font-bold text-slate-950 dark:text-white uppercase tracking-tighter italic">Navigation</span>
+                <span className="text-xl font-bold text-slate-950 dark:text-white uppercase tracking-tighter italic">{t('nav.navigation')}</span>
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsOpen(false)} 
@@ -366,16 +366,16 @@ export function Navbar() {
                        </div>
                     </div>
                     <Button variant="danger" className="w-full h-12 rounded-xl gap-2 font-black uppercase tracking-widest text-xs" onClick={handleLogout}>
-                      <LogOut className="w-4 h-4" /> Sign Out
+                      <LogOut className="w-4 h-4" /> {t('nav.sign_out')}
                     </Button>
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     <Link to="/login" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full h-12 rounded-xl font-bold text-sm">Login</Button>
+                      <Button variant="outline" className="w-full h-12 rounded-xl font-bold text-sm">{t('nav.login')}</Button>
                     </Link>
                     <Link to="/register" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full h-12 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white">Join</Button>
+                      <Button className="w-full h-12 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white">{t('nav.join')}</Button>
                     </Link>
                   </div>
                 )}
@@ -389,16 +389,18 @@ export function Navbar() {
 }
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="h-10 px-8 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/2 backdrop-blur-md transition-colors">
       <div className="flex gap-6">
         <span className="font-bold opacity-60 italic">&copy; {new Date().getFullYear()} JobLinkDZ Career Platforms</span>
-        <Link to="/privacy" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Privacy</Link>
-        <Link to="/support" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Support</Link>
+        <Link to="/privacy" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">{t('footer.privacy')}</Link>
+        <Link to="/support" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">{t('footer.support')}</Link>
       </div>
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-        <span className="uppercase tracking-[0.2em] font-black text-slate-400 dark:text-slate-500">System Responsive</span>
+        <span className="uppercase tracking-[0.2em] font-black text-slate-400 dark:text-slate-500">{t('footer.system_responsive')}</span>
       </div>
     </footer>
   );

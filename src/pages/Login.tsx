@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, Send, Sparkles, UserCircle, Building2, Eye, EyeOff, AlertCircle, CheckCircle2, KeyRound, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -49,10 +50,12 @@ export default function Login() {
     if (user) {
       navigate(user.role === 'admin' ? '/admin-dashboard' : '/dashboard');
     } else {
-      setError(loginError || 'Invalid email or password');
+      setError(loginError || t('auth.errors.invalid_credentials'));
     }
     setIsLoading(false);
   };
+
+  const { t } = useTranslation();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,9 +78,9 @@ export default function Login() {
       console.error('Reset error:', err);
       const msg = err.message?.toLowerCase() || '';
       if (msg.includes('rate limit') || err.status === 429) {
-        setResetError('Too many attempts. Please wait at least 60 seconds before trying again.');
+        setResetError(t('auth.errors.rate_limit'));
       } else {
-        setResetError(err.message || 'Failed to send reset email. Please try again.');
+        setResetError(err.message || t('auth.errors.update_failed'));
       }
       setResetStatus('error');
     }
@@ -102,13 +105,13 @@ export default function Login() {
       >
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-8 transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to home
+          {t('auth.back_to_home')}
         </Link>
 
         <GlassCard className="p-10">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold mb-2">Welcome</h1>
-            <p className="text-slate-500">Sign in to your JobLinkDZ account</p>
+            <h1 className="text-3xl font-bold mb-2">{t('auth.welcome')}</h1>
+            <p className="text-slate-500">{t('auth.sign_in_subtitle')}</p>
           </div>
 
           {error && (
@@ -118,11 +121,11 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Input type="email" placeholder="name@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input type="email" placeholder={t('auth.email_placeholder')} required value={email} onChange={(e) => setEmail(e.target.value)} />
             
             <Input 
               type={showPassword ? "text" : "password"} 
-              placeholder="Your password" 
+              placeholder={t('auth.password_placeholder')} 
               required 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
@@ -143,13 +146,13 @@ export default function Login() {
                 onClick={() => setIsResetModalOpen(true)}
                 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                Forgot password?
+                {t('auth.forgot_password')}
               </button>
             </div>
 
             <div className="flex items-center justify-between mt-2">
               <Button type="submit" className="h-12 w-full" isLoading={isLoading}>
-                Sign In
+                {t('auth.sign_in')}
               </Button>
             </div>
           </form>
@@ -158,7 +161,7 @@ export default function Login() {
           <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2 justify-center mb-6">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Demo Accounts</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('auth.demo_accounts')}</span>
               <Sparkles className="w-4 h-4 text-amber-400" />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -189,8 +192,12 @@ export default function Login() {
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">{account.label}</p>
-                        <p className="text-[9px] text-slate-500 font-medium">{account.role === 'admin' ? 'Recruiter' : 'Job Seeker'}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {account.role === 'admin' ? t('auth.recruiter') : t('auth.candidate')}
+                        </p>
+                        <p className="text-[9px] text-slate-500 font-medium">
+                          {account.role === 'admin' ? t('auth.recruiter') : t('auth.job_seeker')}
+                        </p>
                       </div>
                     </div>
                     <div className="text-[10px] font-mono text-slate-400 truncate">
@@ -207,7 +214,7 @@ export default function Login() {
 
           <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-500">
-              Don't have an account? <Link to="/register" className="text-primary font-bold hover:underline">Register now</Link>
+              {t('auth.no_account')} <Link to="/register" className="text-primary font-bold hover:underline">{t('auth.register_now')}</Link>
             </p>
           </div>
         </GlassCard>
@@ -251,14 +258,14 @@ export default function Login() {
                 </div>
 
                 <h2 className="text-2xl font-black italic text-slate-950 dark:text-white tracking-tighter mb-2 uppercase">
-                  {resetStatus === 'success' ? 'CHECK YOUR EMAIL' : resetStatus === 'error' ? 'SOMETHING WENT WRONG' : 'RESET PASSWORD'}
+                  {resetStatus === 'success' ? t('auth.check_email') : resetStatus === 'error' ? t('auth.something_wrong') : t('auth.reset_password')}
                 </h2>
                 <p className="text-sm text-slate-500 leading-relaxed font-medium">
                   {resetStatus === 'success'
-                    ? `We sent a password reset link to ${resetEmail}. Check your inbox and spam folder.`
+                    ? t('auth.reset_email_sent', { email: resetEmail })
                     : resetStatus === 'error'
                     ? resetError
-                    : "Enter your email address and we'll send you a secure link to reset your password."
+                    : t('auth.reset_instructions')
                   }
                 </p>
               </div>
@@ -275,9 +282,9 @@ export default function Login() {
                     {/* Steps visual */}
                     <div className="bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 p-5 space-y-3">
                       {[
-                        { step: 1, text: 'Open your email inbox' },
-                        { step: 2, text: 'Click the reset password link' },
-                        { step: 3, text: 'Set your new password' },
+                        { step: 1, text: t('auth.step_open_inbox') },
+                        { step: 2, text: t('auth.step_click_link') },
+                        { step: 3, text: t('auth.step_set_password') },
                       ].map(({ step, text }) => (
                         <div key={step} className="flex items-center gap-3">
                           <div className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-black shrink-0">
@@ -295,7 +302,7 @@ export default function Login() {
                         className="flex-1"
                         onClick={closeResetModal}
                       >
-                        Back to Login
+                        {t('auth.back_to_login')}
                       </Button>
                       <Button
                         type="button"
@@ -305,12 +312,12 @@ export default function Login() {
                           setResetError(null);
                         }}
                       >
-                        Resend Email
+                        {t('auth.resend_email')}
                       </Button>
                     </div>
 
                     <p className="text-[11px] text-slate-400 text-center font-medium">
-                      Didn't receive it? Check your spam folder or try again with a different email.
+                      {t('auth.not_received')}
                     </p>
                   </motion.div>
                 ) : resetStatus === 'error' ? (
@@ -357,7 +364,7 @@ export default function Login() {
                     <form onSubmit={handleResetPassword} className="space-y-6 relative z-10">
                       <Input
                         type="email"
-                        placeholder="name@example.com"
+                        placeholder={t('auth.email_placeholder')}
                         required
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
@@ -366,7 +373,7 @@ export default function Login() {
                       <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
                         <ShieldCheck className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                          For security, we'll send a reset link even if the email isn't registered — no account info is revealed.
+                          {t('auth.security_notice')}
                         </p>
                       </div>
 
@@ -386,7 +393,7 @@ export default function Login() {
                           isLoading={resetStatus === 'loading'}
                         >
                           <Send className="w-4 h-4 mr-2" />
-                          Send Link
+                          {t('auth.send_link')}
                         </Button>
                       </div>
                     </form>
