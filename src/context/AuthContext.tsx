@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { buildFallbackUser } from './authProfile.js';
 
 export interface User {
   id: string;
@@ -56,11 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data) {
           setUser(data as User);
         } else {
-          setUser(null);
+          setUser(buildFallbackUser(sessionUser) as User | null);
         }
       } catch (error) {
         console.error('Error fetching user:', error);
-        setUser(null);
+        setUser(buildFallbackUser(sessionUser) as User | null);
       } finally {
         setIsLoading(false);
       }
@@ -82,14 +83,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      const userId = data.user?.id;
-      if (!userId) return null;
+      const fallbackProfile = buildFallbackUser(data.user, email);
+      const userId = fallbackProfile?.id;
+      if (!userId || !fallbackProfile) return null;
       const { data: profile, error: profileError } = await supabase.from('users').select('id, full_name, email, role, phone, location').eq('id', userId).single();
       if (profileError || !profile) {
-        const defaultProfile = { id: userId, full_name: 'Anonymous', email, role: 'candidate' } as User;
-        await supabase.from('users').insert(defaultProfile).select();
-        setUser(defaultProfile);
-        return defaultProfile;
+        const { error: upsertError } = await supabase.from('users').upsert(fallbackProfile);
+        if (upsertError) {
+          console.warn('Could not persist fallback profile during login:', upsertError);
+        }
+        setUser(fallbackProfile as User);
+        return fallbackProfile as User;
       }
       setUser(profile as User);
       return profile as User;
