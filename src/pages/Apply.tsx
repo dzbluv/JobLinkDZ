@@ -58,7 +58,7 @@ export default function Apply() {
       }, 1000);
 
       timer = setTimeout(() => {
-        navigate("/candidate-dashboard");
+        navigate("/");
       }, 3000);
     }
 
@@ -274,7 +274,7 @@ export default function Apply() {
 
             <div className="w-full max-w-sm glass-card border-white/5 p-8 rounded-[2rem] mb-12">
               <div className="flex justify-between items-end text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
-                <span>Redirecting to Dashboard</span>
+                <span>Redirecting to Home</span>
                 <span className="text-indigo-400 italic text-sm">
                   {countdown}s
                 </span>

@@ -1,14 +1,16 @@
 export interface Company {
   id: string;
+  owner_id?: string;
   name: string;
-  logo: string;
+  logo?: string;
   industry: string;
   location: string;
-  website: string;
+  website?: string;
   description: string;
-  employees: string;
-  size: 'Small' | 'Medium' | 'Large'; // Added size category
-  founded: string;
+  employees?: string;
+  size: 'Small' | 'Medium' | 'Large';
+  founded?: string;
+  created_at?: string;
 }
 
 export const mockCompanies: Company[] = [

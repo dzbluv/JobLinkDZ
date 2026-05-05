@@ -142,8 +142,11 @@ export default function AdminDashboard() {
                       <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-white dark:bg-white/5 transition-colors group">
                         <td className="px-6 py-4">
                            <div className="flex items-center gap-3">
-                              <Avatar name={`Applicant ${i + 1}`} size="sm" />
-                              <span className="font-bold text-sm text-slate-900 dark:text-white">{app.users?.full_name || `Candidate ${i + 1}`}</span>
+                               <Avatar name={app.users?.full_name || 'Candidate'} size="sm" />
+                               <div className="flex flex-col">
+                                 <span className="font-bold text-sm text-slate-900 dark:text-white">{app.users?.full_name || 'Unknown Candidate'}</span>
+                                 <span className="text-[10px] text-slate-500 font-medium">{app.users?.email || 'N/A'}</span>
+                               </div>
                            </div>
                         </td>
                         <td className="px-6 py-4">

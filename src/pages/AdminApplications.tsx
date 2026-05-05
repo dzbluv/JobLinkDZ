@@ -76,8 +76,11 @@ function ApplicationDetailsModal({
               <User className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white italic flex items-center gap-3">
                 {getAppCandidateName(app)}
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400 not-italic">
+                  ({getAppCandidateEmail(app)})
+                </span>
               </h2>
               <p className="text-sm text-slate-500 font-medium">
                 Application for{" "}
@@ -472,10 +475,7 @@ export default function AdminApplications() {
                             {getAppCandidateName(app)}
                           </p>
                           <p className="text-[10px] text-slate-500">
-                            {getAppCandidateName(app)
-                              .toLowerCase()
-                              .replace(/\s+/g, ".")}
-                            @joblinkdz.com
+                            {getAppCandidateEmail(app)}
                           </p>
                         </div>
                       </div>

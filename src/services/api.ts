@@ -7,16 +7,6 @@ import type { Application } from "../data/mockApplications";
 export const jobsAPI = {
   getAll: async (): Promise<JobOffer[]> => {
     try {
-<<<<<<< HEAD
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as JobOffer[];
-    } catch (e) {
-      console.error("Error fetching jobs:", e);
-=======
       const { data, error, status, statusText } = await supabase
         .from('jobs')
         .select('*')
@@ -31,7 +21,6 @@ export const jobsAPI = {
       return (data || []) as JobOffer[];
     } catch (e) {
       console.error('[jobsAPI] Unexpected error fetching jobs:', e);
->>>>>>> 90a2904 (azuul)
       return [];
     }
   },

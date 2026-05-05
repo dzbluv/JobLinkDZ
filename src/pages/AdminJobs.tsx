@@ -81,6 +81,33 @@ export default function AdminJobs() {
      fetchData();
   }, [user?.id, user?.role, user?.full_name]);
 
+  useEffect(() => {
+    if (editingJobId) {
+      const job = jobs.find(j => j.id === editingJobId);
+      if (job) {
+        setForm({
+          title: job.title,
+          company: job.company,
+          location: job.location,
+          salary: job.salary_range,
+          type: job.job_type,
+          description: job.description,
+          workHours: job.work_hours_per_week?.toString() || '40'
+        });
+      }
+    } else {
+      setForm({ 
+        title: '', 
+        company: user?.full_name ? user.full_name + "'s Company" : '', 
+        location: 'Algiers', 
+        salary: '', 
+        type: 'Full-time', 
+        description: '', 
+        workHours: '40' 
+      });
+    }
+  }, [editingJobId, jobs, user?.full_name]);
+
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id || !companyId) {
@@ -90,7 +117,6 @@ export default function AdminJobs() {
     setIsPosting(true);
 
     try {
-<<<<<<< HEAD
       if (editingJobId) {
         const updateData = {
           title: form.title,
@@ -136,32 +162,6 @@ export default function AdminJobs() {
         } else {
            alert('Failed to create job. Check the browser console for details.');
         }
-=======
-      const newJob: Omit<JobOffer, 'id'> = {
-        title: form.title,
-        company: form.company,
-        company_id: companyId,
-        location: form.location,
-        job_type: form.type as any,
-        salary_range: form.salary || 'Competitive',
-        description: form.description || 'No description provided.',
-        skills: [],
-        requirements: [],
-        responsibilities: [],
-        status: 'active',
-        created_at: new Date().toISOString()
-      };
-
-      console.log('[AdminJobs] Posting job:', newJob);
-      const newId = await jobsAPI.create(newJob);
-      
-      if (newId) {
-        const fullNewJob = { ...newJob, id: newId } as JobOffer;
-        setJobs([fullNewJob, ...jobs]);
-        setIsModalOpen(false);
-        setForm({ title: '', company: form.company, location: '', salary: '', type: 'Full-time', description: '' });
-        checkJobAgainstAlerts(fullNewJob);
->>>>>>> 90a2904 (azuul)
       }
     } catch (err) {
       console.error('Failed to post job:', err);

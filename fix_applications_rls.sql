@@ -50,3 +50,14 @@ USING (
 
 -- Note: The existing policy "Users can view their own applications." already allows 
 -- candidates to see the applications they've submitted, so we don't need to change that.
+
+-- 6. Allow recruiters to view candidate profiles (for joins in application views)
+DROP POLICY IF EXISTS "Recruiters can view user profiles." ON public.users;
+CREATE POLICY "Recruiters can view user profiles." ON public.users 
+FOR SELECT 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.users 
+    WHERE users.id = auth.uid() AND users.role = 'recruiter'
+  )
+);
