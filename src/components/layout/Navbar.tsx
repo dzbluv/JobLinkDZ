@@ -314,8 +314,8 @@ export function Footer() {
     <footer className="h-10 px-8 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/2 backdrop-blur-md transition-colors">
       <div className="flex gap-6">
         <span className="font-bold opacity-60 italic">&copy; {new Date().getFullYear()} JobLinkDZ Career Platforms</span>
-        <a href="#" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Privacy</a>
-        <a href="#" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Support</a>
+        <Link to="/privacy" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Privacy</Link>
+        <Link to="/support" className="hover:text-indigo-600 dark:hover:text-slate-300 transition-colors font-black tracking-widest uppercase">Support</Link>
       </div>
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>

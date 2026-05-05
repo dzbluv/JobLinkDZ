@@ -88,7 +88,7 @@ export default function Login() {
 
         <GlassCard className="p-10">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome</h1>
             <p className="text-slate-500">Sign in to your JobLinkDZ account</p>
           </div>
 

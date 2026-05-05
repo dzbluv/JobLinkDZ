@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Briefcase, Users, Star, ArrowRight, CheckCircle2, TrendingUp, Globe, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { GlassCard, Badge } from '../components/ui/Shared';
+import InteractiveCircles from '../components/ui/InteractiveCircles';
 import { motion } from 'motion/react';
 import type { JobOffer } from '../data/mockJobs';
 import { jobsAPI } from '../services/api';
@@ -36,14 +37,17 @@ export default function Landing() {
   };
 
   return (
-    <div className="overflow-x-hidden min-h-screen bg-background text-foreground transition-colors duration-500">
+    <div className="overflow-x-hidden min-h-screen text-foreground transition-colors duration-500">
+
       {/* Abstract Background Glows */}
       <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-indigo-600/10 dark:bg-indigo-600/20 blur-[120px] rounded-full animate-pulse" />
       <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] bg-cyan-500/5 dark:bg-cyan-500/10 blur-[100px] rounded-full animate-pulse [animation-delay:2s]" />
       <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-purple-500/5 dark:bg-purple-500/10 blur-[100px] rounded-full animate-float" />
 
-      <section className="relative px-8 pt-20 pb-32 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
-        <motion.div 
+      <div className="relative overflow-hidden w-full">
+        <InteractiveCircles />
+        <section className="relative px-8 pt-20 pb-32 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+          <motion.div 
           className="flex-1 text-center md:text-left"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -108,6 +112,7 @@ export default function Landing() {
           </GlassCard>
         </motion.div>
       </section>
+      </div>
 
       {/* Stats Section */}
       <section className="px-8 py-20 bg-primary/5 dark:bg-slate-900/50 backdrop-blur-sm">

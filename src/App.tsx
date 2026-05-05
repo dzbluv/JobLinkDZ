@@ -23,6 +23,8 @@ import AdminJobs from './pages/AdminJobs';
 import AdminApplications from './pages/AdminApplications';
 import AccessDenied from './pages/AccessDenied';
 import NotFound from './pages/NotFound';
+import Privacy from './pages/Privacy';
+import Support from './pages/Support';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -48,6 +50,8 @@ function AnimatedRoutes() {
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
           <Route path="/companies/:id" element={<CompanyProfile />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/support" element={<Support />} />
           
           {/* Candidate Routes */}
           <Route 
