@@ -60,8 +60,11 @@ export default function Login() {
     setResetError(null);
 
     try {
+      // Use VITE_SITE_URL so the email link always points to production,
+      // even when the reset is triggered from localhost during development.
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: `${siteUrl}/update-password`,
       });
 
       if (error) throw error;
