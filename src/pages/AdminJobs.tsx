@@ -338,10 +338,10 @@ export default function AdminJobs() {
                         value={form.type}
                         onChange={(e) => setForm({...form, type: e.target.value})}
                       >
-                         <option value="Full-time">Full-time</option>
-                         <option value="Part-time">Part-time</option>
-                         <option value="Remote">Remote</option>
-                         <option value="Contract">Contract</option>
+                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Full-time">Full-time</option>
+                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Part-time">Part-time</option>
+                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Remote">Remote</option>
+                         <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white" value="Contract">Contract</option>
                       </select>
                     </div>
                     <div className="col-span-2 space-y-1">

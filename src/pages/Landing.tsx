@@ -186,8 +186,8 @@ export default function Landing() {
                 </GlassCard>
                 <GlassCard className="aspect-square flex flex-col items-center justify-center text-center p-8 mt-6">
                    <Star className="w-12 h-12 text-secondary mb-4" />
-                   <h4 className="font-bold">AI Matching</h4>
-                   <p className="text-xs text-slate-500 mt-2">Get matched with jobs based on your skills.</p>
+                   <h4 className="font-bold">Premium Roles</h4>
+                   <p className="text-xs text-slate-500 mt-2">Discover hand-picked opportunities from top employers.</p>
                 </GlassCard>
              </div>
           </div>

@@ -366,9 +366,9 @@ export default function Jobs() {
              <div className="flex items-center gap-2">
                 <span>Sort by:</span>
                 <select className="bg-transparent font-bold text-foreground outline-none cursor-pointer">
-                   <option>Newest First</option>
-                   <option>Salary Range</option>
-                   <option>Company Name</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Newest First</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Salary Range</option>
+                   <option className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Company Name</option>
                 </select>
              </div>
           </div>

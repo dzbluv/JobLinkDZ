@@ -25,6 +25,7 @@ import AccessDenied from './pages/AccessDenied';
 import NotFound from './pages/NotFound';
 import Privacy from './pages/Privacy';
 import Support from './pages/Support';
+import UpdatePassword from './pages/UpdatePassword';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function AnimatedRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
           <Route path="/companies/:id" element={<CompanyProfile />} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowLeft, Send, Sparkles, UserCircle, Building2 } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Send, Sparkles, UserCircle, Building2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { GlassCard, Input } from '../components/ui/Shared';
@@ -11,14 +11,14 @@ import { cn } from '../lib/utils';
 const DEMO_ACCOUNTS = [
   {
     label: 'Candidate',
-    email: 'candidate@joblinkdz.com',
+    email: 'candidatedemo@joblinkdz.com',
     password: 'demo123456',
     role: 'candidate' as const,
     icon: UserCircle,
   },
   {
     label: 'Recruiter',
-    email: 'recruiter@joblinkdz.com',
+    email: 'recruiterdemo@joblinkdz.com',
     password: 'demo123456',
     role: 'admin' as const,
     icon: Building2,
@@ -36,6 +36,7 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +57,9 @@ export default function Login() {
     try {
       // Use Supabase password reset when available; otherwise simulate
       if (supabase.auth && typeof (supabase.auth as any).resetPasswordForEmail === 'function') {
-        const { error } = await (supabase.auth as any).resetPasswordForEmail(resetEmail);
+        const { error } = await (supabase.auth as any).resetPasswordForEmail(resetEmail, {
+          redirectTo: `${window.location.origin}/update-password`
+        });
         if (error) throw error;
       } else {
         await new Promise((r) => setTimeout(r, 1200));
@@ -100,9 +103,37 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input type="email" placeholder="name@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Input type="password" placeholder="Your password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            
+            <div className="space-y-1">
+              <div className="relative">
+                <Input 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Your password" 
+                  required 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  className="pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="text-right">
+                <button 
+                  type="button" 
+                  onClick={() => setIsResetModalOpen(true)}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-2">
               <Button type="submit" className="h-12 w-full" isLoading={isLoading}>
                 Sign In
               </Button>
