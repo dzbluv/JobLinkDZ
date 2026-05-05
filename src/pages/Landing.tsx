@@ -24,6 +24,12 @@ export default function Landing() {
       }
     }
     loadJobs();
+
+    // Toggle no-scrollbar class on body
+    document.body.classList.add('no-scrollbar');
+    return () => {
+      document.body.classList.remove('no-scrollbar');
+    };
   }, []);
   const containerVariants = {
     hidden: { opacity: 0 },
