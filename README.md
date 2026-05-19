@@ -11,9 +11,9 @@
 
 | # | Full Name | Email | Group |
 |---|-----------|-------|-------|
-| 1 | [Full Name] | [email@example.com] | [Group] |
-| 2 | [Full Name] | [email@example.com] | [Group] |
-| 3 | [Full Name] | [email@example.com] | [Group] |
+| 1 | ADJEROUD Mohamed Mounib | m_adjeroud@estin.dz | 10 |
+| 2 | HACHEMI Zakaria | z_hachemi@estin.dz | 10 |
+| 3 | MEKLAT Yacine | y_meklat@estin.dz | 10 |
 
 ---
 
