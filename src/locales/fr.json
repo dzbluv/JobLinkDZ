@@ -354,8 +354,8 @@
   },
 
   "landing.badge_reinvented": "Le Recrutement Réinventé",
-  "hero.title": "Connectez-vous aux Meilleurs Talents et Opportunités",
-  "hero.subtitle": "La plateforme intelligente qui fait le pont entre des professionnels exceptionnels et des entreprises visionnaires.",
+  "landing.hero_title": "Connectez-vous aux Meilleurs Talents et Opportunités",
+  "landing.hero_subtitle": "La plateforme intelligente qui fait le pont entre des professionnels exceptionnels et des entreprises visionnaires.",
   "landing.browse_all_jobs": "Parcourir tous les emplois",
   "landing.get_started": "Commencer",
   "landing.joined_by": "Rejoint par",
